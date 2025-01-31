@@ -3,29 +3,14 @@
 
 namespace NeuralNetwork {
 
-NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
-    if (f == DefaultFunctions::Sigmoid) {
-        f_ = [](const VectorXd& x) { return Sigmoid(x); };
-        b_ = [](const VectorXd& x, const VectorXd& u, long double _) { return u * SigmoidDeriv(x); };
-    } else if (f == DefaultFunctions::ReLU) {
-        f_ = [](const VectorXd& x) { return ReLU(x); };
-        b_ = [](const VectorXd& x, const VectorXd& u, long double _) { return u * ReLuDeriv(x); };
-    }
-}
-
 LinearLayer::LinearLayer(size_t in_size, size_t out_size)
     : in_size_(in_size), out_size_(out_size), A(MatrixXd::Random(out_size, in_size)),
       b(VectorXd::Random(out_size)) {
 }
 
-LinearLayer::LinearLayer(LinearLayer&& oth)
-    : in_size_(oth.in_size_), out_size_(oth.out_size_), A(std::move(oth.A)), b(std::move(oth.b)) {
-    oth.in_size_ = oth.out_size_ = 0;
-}
-
 VectorXd LinearLayer::Forward(const VectorXd& x) const {
     if (x.size() != in_size_) {
-        throw std::runtime_error("Wrong input vector size");
+        throw std::runtime_error("Wrong forward vector size");
     }
 
     return A * x + b;
@@ -42,7 +27,14 @@ MatrixXd LinearLayer::Backward(const VectorXd& x, const MatrixXd& u, long double
     return next_u;
 }
 
-NonLinearLayer::NonLinearLayer(NonLinearLayer&& oth) : f_(std::move(oth.f_)), b_(std::move(oth.b_)) {
+NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
+    if (f == DefaultFunctions::Sigmoid) {
+        f_ = [](const VectorXd& x) { return Sigmoid(x); };
+        b_ = [](const VectorXd& x, const VectorXd& u, long double _) { return u * SigmoidDeriv(x); };
+    } else if (f == DefaultFunctions::ReLU) {
+        f_ = [](const VectorXd& x) { return ReLU(x); };
+        b_ = [](const VectorXd& x, const VectorXd& u, long double _) { return u * ReLuDeriv(x); };
+    }
 }
 
 VectorXd NonLinearLayer::Forward(const VectorXd& x) const {
