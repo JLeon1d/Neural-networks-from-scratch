@@ -8,25 +8,23 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-# For code visibility
+# For code visibility in VSCode
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+add_subdirectory(src)
+add_subdirectory(pkg)
+
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-
-include_directories(${EIGEN_INCLUDE_DIR})
-
-set(EIGEN3_DIR "${CMAKE_SOURCE_DIR}/pkg/eigen-3.4.0")
-set(ANYMOVABLE_DIR "${CMAKE_SOURCE_DIR}/pkg/AnyMovable")
 
 file(GLOB SOURCES "src/*.cpp")
 
 add_executable(neural-net ${SOURCES})
 
-target_include_directories(neural-net PUBLIC ${EIGEN3_DIR})
-target_include_directories(neural-net PUBLIC ${ANYMOVABLE_DIR})
+target_link_libraries(neural-net Eigen3::Eigen)
+target_link_libraries(neural-net AnyMovable)
 
-add_subdirectory(src)
-add_subdirectory(pkg)
+# For all local libraries
+target_include_directories(AnyMovable INTERFACE "${PROJECT_SOURCE_DIR}/pkg/AnyObject")
 
 if(BUILD_TESTING)
   add_subdirectory(tests)

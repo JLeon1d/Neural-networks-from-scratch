@@ -1,1 +1,1 @@
-add_library(any_movable AnyMovable.cpp AnyMovable.h)
+add_library(AnyMovable AnyMovable.cpp AnyMovable.h)

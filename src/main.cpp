@@ -1,6 +1,7 @@
 #include <iostream>
 #include "layer.h"
 #include "loss.h"
+#include "AnyMovable.h"
 
 int main() {
     Eigen::MatrixXd m = Eigen::MatrixXd::Random(2, 3);
