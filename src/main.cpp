@@ -1,30 +1,45 @@
 #include <iostream>
+#include <Eigen/Dense>
+#include <stdexcept>
 #include "layer.h"
 #include "loss.h"
 
-int main() {
-    Eigen::MatrixXd m = Eigen::MatrixXd::Random(2, 3);
-    std::cout << m << std::endl;
-    m.transpose();
-    std::cout << m << std::endl;
-    std::cout << "WORKS\n";
+long double Learn(std::vector<NeuralNetwork::Layer>& NetWork, const Eigen::VectorXd& x, const Eigen::VectorXd& y) {
+    if (x.size() != y.size()) {
+        throw std::logic_error("Wrong input sizes");
+    }
 
-    Eigen::VectorXd v = Eigen::VectorXd::Ones(3);
-    v[1] += 1;
-    v[2] += -2;
-    std::cout << v << std::endl;
+    size_t batch_size = x.size();
+    std::vector<Eigen::VectorXd> xs(NetWork.size() + 1);
+    xs[0] = x;
 
-    std::cout << NeuralNetwork::NonLinearLayer::Sigmoid(v) << std::endl;
-    std::cout << NeuralNetwork::NonLinearLayer::ReLU(v) << std::endl;
+    for (size_t i = 0; i < NetWork.size(); ++i) {
+        xs[i + 1] = NetWork[i]->Forward(xs[i]);
+    }
 
-    Eigen::VectorXd v2 = Eigen::VectorXd::Ones(3);
-    std::cout << v2 << std::endl;
-    std::cout << NeuralNetwork::LossFunction::Calculate(v, v2) << std::endl;
+    auto loss = NeuralNetwork::LossFunction::Calculate(xs[NetWork.size()], y);
+    auto u = NeuralNetwork::LossFunction::Gradient(xs[NetWork.size()], y);
+    for (int i = NetWork.size() - 1; i >= 0; --i) {
+        u = NetWork[i]->Backward(xs[i], u, 1.0);
+    }
 
-    NeuralNetwork::Layer l1 = NeuralNetwork::NonLinearLayer(NeuralNetwork::NonLinearLayer::DefaultFunctions::ReLU);
-    NeuralNetwork::Layer l2 = NeuralNetwork::LinearLayer(3, 4);
-    l1->Forward(v);
-    l2->Forward(v2);
+    return loss;
+}
 
+int main() {  // for now just an example of work
+    size_t batch_size = 5;
+
+    std::vector<NeuralNetwork::Layer> NetWork;
+    NetWork.emplace_back(NeuralNetwork::LinearLayer(batch_size, 7));
+    NetWork.emplace_back(NeuralNetwork::NonLinearLayer(NeuralNetwork::NonLinearLayer::DefaultFunctions::ReLU));
+    NetWork.emplace_back(NeuralNetwork::LinearLayer(7, batch_size));
+    NetWork.emplace_back(NeuralNetwork::NonLinearLayer(NeuralNetwork::NonLinearLayer::DefaultFunctions::Sigmoid));
+
+    Eigen::VectorXd x = Eigen::VectorXd::Ones(batch_size);
+    Eigen::VectorXd y(Eigen::VectorXd::Random(batch_size));
+
+    auto loss = Learn(NetWork, x, y);
+
+    std::cout << "WORKS, loss: " << loss << std::endl;
     return 0;
 }

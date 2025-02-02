@@ -49,11 +49,11 @@ public:
 
     NonLinearLayer(const NonLinearLayer& oth) = delete;
 
-    NonLinearLayer(NonLinearLayer&& oth) = default;
+    NonLinearLayer(NonLinearLayer&& oth) noexcept = default;
 
     NonLinearLayer& operator=(const NonLinearLayer& oth) = delete;
 
-    NonLinearLayer& operator=(NonLinearLayer&& oth) = default;
+    NonLinearLayer& operator=(NonLinearLayer&& oth) noexcept = default;
 
     VectorXd Forward(const VectorXd& x) const;
     MatrixXd Backward(const VectorXd& x, const MatrixXd& u, long double lambda);

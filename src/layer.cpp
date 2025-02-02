@@ -1,5 +1,5 @@
-#include "layer.h"
 #include <stdexcept>
+#include "layer.h"
 
 namespace NeuralNetwork {
 
@@ -30,10 +30,22 @@ MatrixXd LinearLayer::Backward(const VectorXd& x, const MatrixXd& u, long double
 NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
     if (f == DefaultFunctions::Sigmoid) {
         f_ = [](const VectorXd& x) { return Sigmoid(x); };
-        b_ = [](const VectorXd& x, const VectorXd& u, long double _) { return u * SigmoidDeriv(x); };
+        b_ = [](const VectorXd& x, const MatrixXd& u, long double _) {
+            if (u.size() != x.size()) {
+                throw std::logic_error("NonLinearLayer wrong Backward sizes");
+            }
+
+            return MatrixXd(u * SigmoidDeriv(x).asDiagonal());
+        };
     } else if (f == DefaultFunctions::ReLU) {
         f_ = [](const VectorXd& x) { return ReLU(x); };
-        b_ = [](const VectorXd& x, const VectorXd& u, long double _) { return u * ReLuDeriv(x); };
+        b_ = [](const VectorXd& x, const MatrixXd& u, long double _) {
+            if (u.size() != x.size()) {
+                throw std::logic_error("NonLinearLayer wrong Backward sizes");
+            }
+
+            return MatrixXd(u * ReLuDeriv(x).asDiagonal());
+        };
     }
 }
 

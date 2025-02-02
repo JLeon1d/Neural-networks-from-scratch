@@ -1,5 +1,5 @@
-#include "loss.h"
 #include <stdexcept>
+#include "loss.h"
 
 namespace NeuralNetwork {
 
