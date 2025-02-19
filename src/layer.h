@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <functional>
 #include "AnyMovable.h"
+#include "Eigen/Core"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -37,7 +38,8 @@ class NonLinearLayer {
 public:
     enum class DefaultFunctions {
         Sigmoid,
-        ReLU
+        ReLU,
+        Softmax
     };
 
     explicit NonLinearLayer(DefaultFunctions f);
@@ -60,11 +62,16 @@ public:
 
     // 1/(1 + e^(-x))
     static VectorXd Sigmoid(const VectorXd& x);
-    static VectorXd SigmoidDeriv(const VectorXd& x);
+    static MatrixXd SigmoidDeriv(const VectorXd& x);
 
     // max(0, x)
+    // Works very poorly (at least on mnist)
     static VectorXd ReLU(const VectorXd& x);
-    static VectorXd ReLuDeriv(const VectorXd& x);
+    static MatrixXd ReLuDeriv(const VectorXd& x);
+
+    // sum x = 1.0
+    static VectorXd Softmax(const VectorXd& x);
+    static MatrixXd SoftmaxDeriv(const VectorXd& x);
 
 private:
     std::function<VectorXd(VectorXd const&)> f_;
