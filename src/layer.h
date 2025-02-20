@@ -39,7 +39,8 @@ public:
     enum class DefaultFunctions {
         Sigmoid,
         ReLU,
-        Softmax
+        Softmax,
+        LeakyReLU
     };
 
     explicit NonLinearLayer(DefaultFunctions f);
@@ -60,22 +61,32 @@ public:
     VectorXd Forward(const VectorXd& x) const;
     MatrixXd Backward(const VectorXd& x, const MatrixXd& u, long double lambda);
 
+    // maybe make those functions private?
+
+    /* optimized */
     // 1/(1 + e^(-x))
     static VectorXd Sigmoid(const VectorXd& x);
+    // returns derivative as matrix(1, x.size())
     static MatrixXd SigmoidDeriv(const VectorXd& x);
 
     // max(0, x)
     // Works very poorly (at least on mnist)
     static VectorXd ReLU(const VectorXd& x);
-    static MatrixXd ReLuDeriv(const VectorXd& x);
+    static MatrixXd ReLUDeriv(const VectorXd& x);
 
+    /* optimized */
     // sum x = 1.0
     static VectorXd Softmax(const VectorXd& x);
     static MatrixXd SoftmaxDeriv(const VectorXd& x);
 
+    // maybe add parametr a : max(ax, x))
+    // Works very poorly (at least on mnist)
+    static VectorXd LeakyReLU(const VectorXd& x);
+    static MatrixXd LeakyReLUDeriv(const VectorXd& x);  
+
 private:
     std::function<VectorXd(VectorXd const&)> f_;
-    std::function<MatrixXd(MatrixXd const&, MatrixXd const&, long double)> b_;
+    std::function<MatrixXd(MatrixXd const&, MatrixXd const&)> b_;
 };
 
 template<class TBase>

@@ -31,8 +31,9 @@ int main() {
     std::cout << "Loaded " << data.size() << " data samples" << std::endl;
 
     NeuralNetwork::Network net(
-        {784, 400, 50, 10},
-        {ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid, ActivationFunctions::Softmax}    
+        {784, 200, 80, 10},
+        {ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid},
+        0.05
     );
     size_t TRAIN_SIZE = ((double)data.size()) * 0.8;
 
@@ -50,7 +51,7 @@ int main() {
     }
 
     size_t progress_p = 1000;
-    for (size_t epoch_id = 0; epoch_id < 3; ++epoch_id) {
+    for (size_t epoch_id = 0; epoch_id < 4; ++epoch_id) {
         std::cout << "Epoch " << epoch_id + 1 << std::endl;
         for (size_t i = 0; i < TRAIN_SIZE; ++i) {
             net.TrainSingle(data[i]);
@@ -70,3 +71,45 @@ int main() {
         std::cout << "ACCURACY: " << (double)correct_count/(double)(data.size() - TRAIN_SIZE) << std::endl;
     }
 }
+/*
+notes for comparison:
+
+LeakyReLU kinda slow
+
+    net({784, 400, 80, 10}, {Sigmoid, Sigmoid, Softmax})
+        l_rate = 0.1 :
+            epoch 1: 0.58
+            epoch 2: 0.71
+            epoch 3: 0.764
+        l_rate = 0.2 :
+            epoch 1: 0.66 
+            epoch 2: 0.745
+            epoch 3: 0.75
+        l_rate = 0.3 :
+            epoch 1: 0.65
+
+    net({784, 400, 80, 10}, {Sigmoid, Sigmoid, Sigmoid})
+        l_rate = 0.01 :
+            epoch 1: 0.17
+            epoch 2: 0.22
+            epoch 3: 0.28
+        l_rate = 0.2 :
+            epoch 1: 0.61
+            epoch 2: 0.72
+            epoch 3: 0.77
+
+    [[trash]]
+    net({784, 400, 80, 10}, {Softmax, Sigmoid, Softmax})
+        l_rate = 0.2 :
+            epoch 1: 0.12
+
+    [[trash]]
+    net({784, 400, 80, 10}, {LeakyReLU, LeakyReLU, Softmax})
+        l_rate = 0.3 :
+            epoch 1: 0.1
+
+    net({784, 200, 80, 10}, {Sigmoid, Sigmoid, Sigmoid})
+        l_rate = 0.05 :
+            epoch 1: 0.36
+
+*/

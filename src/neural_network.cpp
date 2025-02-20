@@ -8,14 +8,14 @@
 
 namespace NeuralNetwork {
 
-// some good default setup should be here (for now its random)
-Network::Network(size_t params_size) : params_size_(params_size) {
+// maybe remove this constructor
+Network::Network(size_t params_size, double learning_rate) : params_size_(params_size), learning_rate_(learning_rate) {
     net_.emplace_back(NeuralNetwork::LinearLayer(params_size, 7));
     net_.emplace_back(NeuralNetwork::NonLinearLayer(NeuralNetwork::NonLinearLayer::DefaultFunctions::ReLU));
     net_.emplace_back(NeuralNetwork::LinearLayer(7, 1));
 }
 
-Network::Network(const std::vector<size_t>& layer_sizes) {
+Network::Network(const std::vector<size_t>& layer_sizes, double learning_rate) : learning_rate_(learning_rate) {
     if (layer_sizes.size() == 0) {
         throw std::logic_error("empty layer_sizes");
     }
@@ -30,7 +30,8 @@ Network::Network(const std::vector<size_t>& layer_sizes) {
 }
 
 Network::Network(const std::vector<size_t>& layer_sizes,
-                 const std::vector<NonLinearLayer::DefaultFunctions>& activation_functions) {
+                 const std::vector<NonLinearLayer::DefaultFunctions>& activation_functions,
+                 double learning_rate) : learning_rate_(learning_rate) {
     if (layer_sizes.empty()) {
         throw std::logic_error("empty layer_sizes");
     } else if (activation_functions.empty()) {
@@ -50,7 +51,7 @@ double Network::TrainSingle(const DataSample& data_sample) {
     if (data_sample.first.size() != params_size_) {
         throw std::logic_error("wrong parametrs amount");
     }
-        
+
     std::vector<Eigen::VectorXd> xs(net_.size() + 1);
     xs[0] = data_sample.first;
 
@@ -63,7 +64,7 @@ double Network::TrainSingle(const DataSample& data_sample) {
     auto loss = loss_function.Loss(xs[net_.size()], data_sample.second);
     auto u = loss_function.Gradient(xs[net_.size()], data_sample.second);
     for (int i = net_.size() - 1; i >= 0; --i) {
-        u = net_[i]->Backward(xs[i], u, 0.2);
+        u = net_[i]->Backward(xs[i], u, learning_rate_);
     }
 
     return loss;
@@ -87,6 +88,10 @@ VectorXd Network::Predict(const VectorXd& features) {
     }
 
     return x;
+}
+
+void Network::SetLearningRate(double learning_rate) {
+    learning_rate_ = learning_rate;
 }
 
 };  // namespace NeuralNetwork
