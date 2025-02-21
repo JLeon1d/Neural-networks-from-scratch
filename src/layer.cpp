@@ -24,8 +24,6 @@ MatrixXd LinearLayer::Backward(const VectorXd& x, const MatrixXd& u, long double
         throw std::runtime_error("Wrong backward vector size");
     }
 
-    // std::cout << "ASDAS   " << u.size() << " " << A.size() << std::endl;
-
     MatrixXd next_u(u * A);
 
     A -= lambda * u.transpose() * x.transpose(); 
@@ -36,26 +34,17 @@ MatrixXd LinearLayer::Backward(const VectorXd& x, const MatrixXd& u, long double
 // BIG OPTIIZATION HERE - mutiply not matricies, but elementwise in case of sigmoid/relu
 NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
     if (f == DefaultFunctions::Sigmoid) {
-        f_ = [](const VectorXd& x) { return Sigmoid(x); };
+        f_ = std::move(Sigmoid);
         b_ = [](const VectorXd& x, const MatrixXd& u) {
             if (u.size() != x.size()) {
                 throw std::logic_error("NonLinearLayer wrong Backward sizes");
             }
-            
-            // auto u_ = u.cwiseProduct(SigmoidDeriv(x).transpose());
-            MatrixXd d = SigmoidDeriv(x);
-            // std::cout << u.cols() << "  " << u.rows() << std::endl;
-            // std::cout << d.cols() << "  " << d.rows() << std::endl;
+
             MatrixXd next_u = u.cwiseProduct(SigmoidDeriv(x));
-            // std::cout << u__.cols() << "  " << u__.rows() << std::endl;
-            
-            // std::cout << MatrixXd(u.array() * SigmoidDeriv(x).array()).transpose().cols() << ' ';
-            // std::cout << MatrixXd(u.array()  * SigmoidDeriv(x).array()).transpose().rows() << std::endl;
-            // u.cwiseProduct(SigmoidDeriv(x));
             return next_u;
         };
     } else if (f == DefaultFunctions::ReLU) {
-        f_ = [](const VectorXd& x) { return ReLU(x); };
+        f_ = std::move(ReLU);
         b_ = [](const VectorXd& x, const MatrixXd& u) {
             if (u.size() != x.size()) {
                 throw std::logic_error("NonLinearLayer wrong Backward sizes");
@@ -64,7 +53,7 @@ NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
             return MatrixXd(u * ReLUDeriv(x));
         };
     } else if (f == DefaultFunctions::Softmax) {
-        f_ = [](const VectorXd& x) { return Softmax(x); };
+        f_ = std::move(Softmax);
         b_ = [](const VectorXd& x, const MatrixXd& u) {
             if (u.size() != x.size()) {
                 throw std::logic_error("NonLinearLayer wrong Backward sizes");
@@ -73,7 +62,7 @@ NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
             return MatrixXd(u * SoftmaxDeriv(x));
         };
     } else if (f == DefaultFunctions::LeakyReLU) {
-        f_ = [](const VectorXd& x) { return LeakyReLU(x); };
+        f_ = std::move(LeakyReLU);
         b_ = [](const VectorXd& x, const MatrixXd& u) {
             if (u.size() != x.size()) {
                 throw std::logic_error("NonLinearLayer wrong Backward sizes");

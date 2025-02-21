@@ -13,15 +13,24 @@ public:
     using LossFunctionType = double(const VectorXd&, const VectorXd&);
     using GradienFunctionType = MatrixXd(const VectorXd&, const VectorXd&);
 
+    enum Default {
+        MSE,
+        CrossEntropy
+    };
+
     explicit LossFunction(LossFunctionType loss, GradienFunctionType gradient);
 
-    double Loss(const VectorXd& predicted, const VectorXd& target);
+    explicit LossFunction(Default func);
 
-    MatrixXd Gradient(const VectorXd& predicted, const VectorXd& target);
+    double Loss(const VectorXd& predicted, const VectorXd& target) const;
+
+    MatrixXd Gradient(const VectorXd& predicted, const VectorXd& target) const;
 
     static double MSELoss(const VectorXd& predicted, const VectorXd& target);
-
     static MatrixXd MSEGradient(const VectorXd& predicted, const VectorXd& target);
+
+    static double CrossEntropyLoss(const VectorXd& predicted, const VectorXd& target);
+    static MatrixXd CrossEntropyGradient(const VectorXd& predicted, const VectorXd& target);
 private:
     std::function<LossFunctionType> loss_;
     std::function<GradienFunctionType> gradient_;

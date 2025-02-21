@@ -21,8 +21,8 @@ DataBatch DataLoader::Load() {
             throw std::logic_error("wrong featires size");
         }
 
-        data[i].first = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(raw_data[i].first.data(), features_size);
-        data[i].second = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(raw_data[i].second.data(), lables_size);
+        data[i].features = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(raw_data[i].first.data(), features_size);
+        data[i].target = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(raw_data[i].second.data(), lables_size);
     }
 
     return data;

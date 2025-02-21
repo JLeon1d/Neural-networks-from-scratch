@@ -3,3 +3,4 @@ compile_commands.json
 .cache
 *.idx1-ubyte
 *.idx3-ubyte
+.notes.txt

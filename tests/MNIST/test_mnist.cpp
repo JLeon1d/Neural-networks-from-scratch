@@ -3,6 +3,7 @@
 #include <chrono>
 #include "Eigen/Core"
 #include "layer.h"
+#include "loss.h"
 #include "neural_network.h"
 #include "data_loader.h"
 #include "mnist_data_loader.h"
@@ -20,7 +21,6 @@ bool is_correct(const VectorXd& predicted, const VectorXd& target) {
 
 using ActivationFunctions = NeuralNetwork::NonLinearLayer::DefaultFunctions;
 
-
 // in /build: cmake .. && make && ./test_mnist
 int main() {
     auto features_path = "../tests/MNIST/t10k-images.idx3-ubyte";
@@ -30,18 +30,29 @@ int main() {
     auto data = data_loader.Load();
     std::cout << "Loaded " << data.size() << " data samples" << std::endl;
 
+    size_t TRAIN_SIZE = static_cast<double>(data.size()) * 0.8;
+    NeuralNetwork::DataBatch train_data(TRAIN_SIZE);
+    NeuralNetwork::DataBatch test_data(data.size() - TRAIN_SIZE);
+
+    for (size_t i = 0; i < train_data.size(); ++i) {
+        train_data[i] = std::move(data[i]);
+    }
+    for (size_t i = 0; i < test_data.size(); ++i) {
+        test_data[i] = std::move(data[TRAIN_SIZE + i]);
+    }
+
     NeuralNetwork::Network net(
         {784, 200, 80, 10},
-        {ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid},
-        0.05
+        {ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid, ActivationFunctions::Softmax},
+        0.05,
+        NeuralNetwork::LossFunction(NeuralNetwork::LossFunction::Default::CrossEntropy)
     );
-    size_t TRAIN_SIZE = ((double)data.size()) * 0.8;
 
     {  // calculate expected epoch time
         size_t sample_size = 100;
         auto start = std::chrono::high_resolution_clock::now();
         for (size_t i = 0; i < sample_size; ++i) {
-            net.TrainSingle(data[i]);
+            net.TrainSingle(train_data[i]);
         }
         auto end = std::chrono::high_resolution_clock::now();
 
@@ -51,65 +62,25 @@ int main() {
     }
 
     size_t progress_p = 1000;
-    for (size_t epoch_id = 0; epoch_id < 4; ++epoch_id) {
-        std::cout << "Epoch " << epoch_id + 1 << std::endl;
-        for (size_t i = 0; i < TRAIN_SIZE; ++i) {
-            net.TrainSingle(data[i]);
+    size_t batch_size = 120;
+    for (size_t epoch_id = 0; epoch_id < 30; ++epoch_id) {
+        for (size_t i = 0; i < train_data.size(); ++i) {
+            net.TrainSingle(train_data[i]);
             if (i % progress_p == 0) {
                 std::cout << i << " / " << TRAIN_SIZE << std::endl;
             }
         }
-        std::cout << "Done Training" << std::endl;
-
-        size_t cnt = 0;
-        size_t correct_count = 0;
-        for (size_t i = TRAIN_SIZE; i < data.size(); ++i) {
-            auto predicted = net.Predict(data[i].first);
-            correct_count += is_correct(predicted, data[i].second);
+        /*
+        for (size_t i = 0; i + batch_size < train_data.size(); i += batch_size) {
+            net.TrainBatch(std::vector<NeuralNetwork::DataSample>(train_data.begin() + i, train_data.begin() + i + batch_size));
+            if (i % progress_p == 0) {
+                std::cout << i << " / " << train_data.size() << std::endl;
+            }
         }
+        */
 
-        std::cout << "ACCURACY: " << (double)correct_count/(double)(data.size() - TRAIN_SIZE) << std::endl;
+        std::cout << "Epoch " << epoch_id + 1 << " done" << std::endl;
+        std::cout << "ACCURACY TRAIN: " << net.CheckAccuracy(train_data, is_correct) << std::endl;
+        std::cout << "ACCURACY TEST:  " << net.CheckAccuracy(test_data, is_correct) << std::endl;
     }
 }
-/*
-notes for comparison:
-
-LeakyReLU kinda slow
-
-    net({784, 400, 80, 10}, {Sigmoid, Sigmoid, Softmax})
-        l_rate = 0.1 :
-            epoch 1: 0.58
-            epoch 2: 0.71
-            epoch 3: 0.764
-        l_rate = 0.2 :
-            epoch 1: 0.66 
-            epoch 2: 0.745
-            epoch 3: 0.75
-        l_rate = 0.3 :
-            epoch 1: 0.65
-
-    net({784, 400, 80, 10}, {Sigmoid, Sigmoid, Sigmoid})
-        l_rate = 0.01 :
-            epoch 1: 0.17
-            epoch 2: 0.22
-            epoch 3: 0.28
-        l_rate = 0.2 :
-            epoch 1: 0.61
-            epoch 2: 0.72
-            epoch 3: 0.77
-
-    [[trash]]
-    net({784, 400, 80, 10}, {Softmax, Sigmoid, Softmax})
-        l_rate = 0.2 :
-            epoch 1: 0.12
-
-    [[trash]]
-    net({784, 400, 80, 10}, {LeakyReLU, LeakyReLU, Softmax})
-        l_rate = 0.3 :
-            epoch 1: 0.1
-
-    net({784, 200, 80, 10}, {Sigmoid, Sigmoid, Sigmoid})
-        l_rate = 0.05 :
-            epoch 1: 0.36
-
-*/

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Eigen/Core"
 #include <Eigen/Dense>
 // #include <type_traits>
 #include <utility>
@@ -8,11 +9,14 @@ using Eigen::VectorXd;
 
 namespace NeuralNetwork {
 
-using DataSample = std::pair<VectorXd, VectorXd>;
+struct DataSample {
+    VectorXd features;
+    VectorXd target;
+};
+
 using DataBatch = std::vector<DataSample>;
 
 // all features have the same type ?
-// maybe force LoadFuncton to cast to long dobule ?
 class DataLoader {
 public:
     using LoadFunction = std::vector<std::pair<std::vector<double>, std::vector<double>>>(const std::string&, const std::string&);
