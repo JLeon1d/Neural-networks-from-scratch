@@ -1,9 +1,10 @@
 #pragma once
 
-#include <Eigen/Dense>
-#include <functional>
 #include "AnyMovable.h"
 #include "Eigen/Core"
+#include "gradient.h"
+
+#include <functional>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -23,7 +24,7 @@ public:
     LinearLayer& operator=(LinearLayer&& oth) = default;
 
     VectorXd Forward(const VectorXd& x) const;
-    MatrixXd Backward(const VectorXd& x, const MatrixXd& u, long double lambda);
+    MatrixXd Backward(const VectorXd& x, const MatrixXd& u, GradientFunction& gf, long double lambda);
 
     ~LinearLayer() = default;
 
@@ -59,11 +60,10 @@ public:
     NonLinearLayer& operator=(NonLinearLayer&& oth) noexcept = default;
 
     VectorXd Forward(const VectorXd& x) const;
-    MatrixXd Backward(const VectorXd& x, const MatrixXd& u, long double lambda);
+    MatrixXd Backward(const VectorXd& x, const MatrixXd& u, GradientFunction& gf, long double lambda);
 
     // maybe make those functions private?
 
-    /* optimized */
     // 1/(1 + e^(-x))
     static VectorXd Sigmoid(const VectorXd& x);
     // returns derivative as matrix(1, x.size())
@@ -74,7 +74,6 @@ public:
     static VectorXd ReLU(const VectorXd& x);
     static MatrixXd ReLUDeriv(const VectorXd& x);
 
-    /* optimized */
     // sum x = 1.0
     static VectorXd Softmax(const VectorXd& x);
     static MatrixXd SoftmaxDeriv(const VectorXd& x);
@@ -93,7 +92,7 @@ template<class TBase>
 class ILayer : public TBase {
 public:
     virtual VectorXd Forward(const VectorXd& x) const = 0;
-    virtual MatrixXd Backward(const VectorXd& x, const MatrixXd& u, long double lambda) = 0;
+    virtual MatrixXd Backward(const VectorXd& x, const MatrixXd& u, GradientFunction& gf, long double lambda) = 0;
 };
 
 template<class TBase, class TObject>
@@ -106,8 +105,8 @@ public:
         return CBase::Object().Forward(x);
     }
 
-    MatrixXd Backward(const VectorXd& x, const MatrixXd& u, long double lambda) override {
-        return CBase::Object().Backward(x, u, lambda);
+    MatrixXd Backward(const VectorXd& x, const MatrixXd& u, GradientFunction& gf, long double lambda) override {
+        return CBase::Object().Backward(x, u, gf, lambda);
     }
 };
 

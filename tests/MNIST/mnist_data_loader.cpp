@@ -1,4 +1,5 @@
 #include "mnist_data_loader.h"
+
 #include <cstring>
 #include <filesystem>
 #include <fstream>
@@ -65,7 +66,7 @@ std::vector<uint8_t> read_mnist_labels(const std::string& path) {
     return labels;
 }
 
-// data[i].second - vector with 1 in index of right value, 0 everywhere else
+// data[i].second - vector with 1 in index of right digit, 0 everywhere else
 std::vector<DataSample> LoadMNIST(const std::string& features_path, const std::string& lables_path) {
     auto features = read_mnist_images(features_path);
     auto lables = read_mnist_labels(lables_path);
@@ -77,7 +78,7 @@ std::vector<DataSample> LoadMNIST(const std::string& features_path, const std::s
     for (size_t i = 0; i < data.size(); ++i) {
         data[i].first.resize(features[i].size());
         for (size_t f_id = 0; f_id < features[i].size(); ++f_id) {
-            data[i].first[f_id] = static_cast<double>(features[i][f_id]);
+            data[i].first[f_id] = static_cast<double>(features[i][f_id]) / 255.0;
         }
 
         data[i].second.resize(10, 0.0);

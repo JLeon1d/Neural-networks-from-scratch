@@ -20,9 +20,8 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 # file(GLOB SOURCES "src/*.cpp")
 
-add_library(neural-net "src/data_loader.cpp" "src/layer.cpp" "src/loss.cpp" "src/neural_network.cpp")    # for actual testing
-# add_library(neural-net INTERFACE)    # for actual testing
-# add_executable(neural-net ${SOURCES}) # for tesing in main
+add_library(neural-net "src/data_loader.cpp" "src/layer.cpp" "src/loss.cpp" "src/neural_network.cpp" "src/gradient.cpp")
+# add_library(neural-net INTERFACE) # for actual testing
 
 target_link_libraries(neural-net Eigen3::Eigen)
 target_link_libraries(neural-net AnyMovable)

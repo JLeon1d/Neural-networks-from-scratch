@@ -4,31 +4,32 @@
 #include "data_loader.h"
 #include "layer.h"
 #include "loss.h"
+#include "gradient.h"
 
 using Eigen::VectorXd;
 
 namespace NeuralNetwork {
 
-// why do i have to reuse it?
-using DataSample = NeuralNetwork::DataSample;
-
-// Cross Validation
+// Cross Validation?
 class Network {
 public:
     static constexpr double kDefaultLearningRate = 0.2;
 
     explicit Network(const std::vector<size_t>& layer_sizes, double learning_rate=kDefaultLearningRate,
-                     LossFunction lf=LossFunction(LossFunction::Default::MSE));
+                     LossFunction lf = LossFunction(LossFunction::Default::MSE),
+                     GradientFunction::Type gf_type = GradientFunction::Type::Classic);
 
     // (layer_sizes.size()) should be equal to (activation_functions.size() + 1)
     explicit Network(const std::vector<size_t>& layer_sizes,
                      const std::vector<NonLinearLayer::DefaultFunctions>& activation_functions,
-                     double learning_rate=kDefaultLearningRate,
-                     LossFunction lf=LossFunction(LossFunction::Default::MSE));
+                     double learning_rate = kDefaultLearningRate,
+                     LossFunction lf = LossFunction(LossFunction::Default::MSE),
+                     GradientFunction::Initializer gf_initializer = {GradientFunction::Type::Classic, {}});
 
     void TrainSingle(const DataSample& data_sample);
 
-    void TrainBatch(const DataBatch& data_batch);
+    // useless
+    // void TrainBatch(const DataBatch& data_batch);
 
     VectorXd Predict(const VectorXd& features) const;
     
@@ -42,9 +43,10 @@ public:
 
 private:
     std::vector<Layer> net_;
-    double learning_rate_ = 0.2;
     LossFunction loss_function_;
-    // class for calculating Gradient stored here
+    std::vector<GradientFunction> gradient_function_;
+
+    double learning_rate_ = 0.2;
 };
 
 }; // namespace NeuralNetwork

@@ -1,13 +1,16 @@
-#include <iostream>
-#include <sys/types.h>
-#include <chrono>
 #include "Eigen/Core"
+#include "gradient.h"
 #include "layer.h"
 #include "loss.h"
 #include "neural_network.h"
 #include "data_loader.h"
 #include "mnist_data_loader.h"
 
+#include <iostream>
+#include <sys/types.h>
+#include <chrono>
+
+// take digit with max probability as predicted label
 bool is_correct(const VectorXd& predicted, const VectorXd& target) {
     size_t answer = 0;
     for (size_t i = 1; i < predicted.size(); ++i) {
@@ -20,32 +23,35 @@ bool is_correct(const VectorXd& predicted, const VectorXd& target) {
 }
 
 using ActivationFunctions = NeuralNetwork::NonLinearLayer::DefaultFunctions;
+using LossFunctions = NeuralNetwork::LossFunction::Default;
+using GradientFunctions = NeuralNetwork::GradientFunction::Type;
 
 // in /build: cmake .. && make && ./test_mnist
 int main() {
-    auto features_path = "../tests/MNIST/t10k-images.idx3-ubyte";
-    auto lables_path = "../tests/MNIST/t10k-labels.idx1-ubyte";
-    NeuralNetwork::DataLoader data_loader(features_path, lables_path, LoadMNIST);
+    auto train_features_path = "../tests/MNIST/train-images.idx3-ubyte";
+    auto train_lables_path = "../tests/MNIST/train-labels.idx1-ubyte";
+    auto test_features_path = "../tests/MNIST/t10k-images.idx3-ubyte";
+    auto test_lables_path = "../tests/MNIST/t10k-labels.idx1-ubyte";
 
-    auto data = data_loader.Load();
-    std::cout << "Loaded " << data.size() << " data samples" << std::endl;
+    NeuralNetwork::DataLoader train_data_loader(train_features_path, train_lables_path, LoadMNIST);
+    NeuralNetwork::DataLoader test_data_loader(test_features_path, test_lables_path, LoadMNIST);
 
-    size_t TRAIN_SIZE = static_cast<double>(data.size()) * 0.8;
-    NeuralNetwork::DataBatch train_data(TRAIN_SIZE);
-    NeuralNetwork::DataBatch test_data(data.size() - TRAIN_SIZE);
+    auto train_data = train_data_loader.Load();
+    auto test_data = test_data_loader.Load();
 
-    for (size_t i = 0; i < train_data.size(); ++i) {
-        train_data[i] = std::move(data[i]);
-    }
-    for (size_t i = 0; i < test_data.size(); ++i) {
-        test_data[i] = std::move(data[TRAIN_SIZE + i]);
-    }
+    train_data.resize(8000);
+    test_data.resize(2000);
 
+    std::cout << "Loaded " << train_data.size() << " train data samples" << std::endl;
+    std::cout << "Loaded " << test_data.size() << " test data samples" << std::endl;
+
+    // can not put user-written gradient decent here(
     NeuralNetwork::Network net(
         {784, 200, 80, 10},
-        {ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid, ActivationFunctions::Softmax},
-        0.05,
-        NeuralNetwork::LossFunction(NeuralNetwork::LossFunction::Default::CrossEntropy)
+        {ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid},
+        0.002,
+        NeuralNetwork::LossFunction(LossFunctions::MSE),
+        {GradientFunctions::Adam, {}}
     );
 
     {  // calculate expected epoch time
@@ -57,30 +63,24 @@ int main() {
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        double expected_epoch_minutes = (((double)duration.count() * TRAIN_SIZE)/(double)sample_size) / 1e6 / 60.0;
+        double expected_epoch_minutes = (((double)duration.count() * train_data.size())/(double)sample_size) / 1e6 / 60.0;
         std::cout << "Expected epoch time (minutes): " << expected_epoch_minutes << std::endl;
     }
 
     size_t progress_p = 1000;
-    size_t batch_size = 120;
+    size_t batch_size = 100;
     for (size_t epoch_id = 0; epoch_id < 30; ++epoch_id) {
         for (size_t i = 0; i < train_data.size(); ++i) {
             net.TrainSingle(train_data[i]);
-            if (i % progress_p == 0) {
-                std::cout << i << " / " << TRAIN_SIZE << std::endl;
-            }
-        }
-        /*
-        for (size_t i = 0; i + batch_size < train_data.size(); i += batch_size) {
-            net.TrainBatch(std::vector<NeuralNetwork::DataSample>(train_data.begin() + i, train_data.begin() + i + batch_size));
+            /*
             if (i % progress_p == 0) {
                 std::cout << i << " / " << train_data.size() << std::endl;
             }
+            */
         }
-        */
 
-        std::cout << "Epoch " << epoch_id + 1 << " done" << std::endl;
-        std::cout << "ACCURACY TRAIN: " << net.CheckAccuracy(train_data, is_correct) << std::endl;
-        std::cout << "ACCURACY TEST:  " << net.CheckAccuracy(test_data, is_correct) << std::endl;
+        std::cout << "Epoch " << epoch_id + 1 << " is done" << std::endl;
+        std::cout << "Accuracy train: " << net.CheckAccuracy(train_data, is_correct) << std::endl;
+        std::cout << "Accuracy test:  " << net.CheckAccuracy(test_data, is_correct) << std::endl;
     }
 }

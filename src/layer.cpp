@@ -1,8 +1,8 @@
-#include <stdexcept>
 #include "layer.h"
 #include "Eigen/Core"
+#include "gradient.h"
 
-#include <iostream>
+#include <stdexcept>
 
 namespace NeuralNetwork {
 
@@ -19,19 +19,19 @@ VectorXd LinearLayer::Forward(const VectorXd& x) const {
     return A * x + b;
 }
 
-MatrixXd LinearLayer::Backward(const VectorXd& x, const MatrixXd& u, long double lambda) {
+MatrixXd LinearLayer::Backward(const VectorXd& x, const MatrixXd& u, GradientFunction& gf, long double lambda) {
     if (u.rows() != 1 or u.cols() != out_size_) {
         throw std::runtime_error("Wrong backward vector size");
     }
 
     MatrixXd next_u(u * A);
+    auto gradients = gf->operator()(x, u, lambda);
+    A += gradients.first;
+    b += gradients.second;
 
-    A -= lambda * u.transpose() * x.transpose(); 
-    b -= lambda * u.transpose();
     return next_u;
 }
 
-// BIG OPTIIZATION HERE - mutiply not matricies, but elementwise in case of sigmoid/relu
 NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
     if (f == DefaultFunctions::Sigmoid) {
         f_ = std::move(Sigmoid);
@@ -77,7 +77,7 @@ VectorXd NonLinearLayer::Forward(const VectorXd& x) const {
     return f_(x); 
 }
 
-MatrixXd NonLinearLayer::Backward(const VectorXd& x, const MatrixXd& u, long double _) {
+MatrixXd NonLinearLayer::Backward(const VectorXd& x, const MatrixXd& u, GradientFunction& _, long double __) {
     return b_(x, u);
 }
 
