@@ -4,7 +4,7 @@
 
 namespace NeuralNetwork {
 
-GradientPair ClassicGradient::operator()(const Vector& x, const Matrix& u, double learning_rate) {
+GradientPair ClassicGradient::operator()(const Vector& x, const RowVector& u, double learning_rate) {
     return std::make_pair(- learning_rate * u.transpose() * x.transpose(), - learning_rate * u.transpose());
 }
 
@@ -12,7 +12,7 @@ MomentumGradient::MomentumGradient(size_t x_size, size_t u_size, double alpha)
     : momentum_A_(Matrix::Zero(u_size, x_size)), momentum_b_(Vector::Zero(u_size)), alpha_(alpha) {
 }
 
-GradientPair MomentumGradient::operator()(const Vector& x, const Matrix& u, double learning_rate) {
+GradientPair MomentumGradient::operator()(const Vector& x, const RowVector& u, double learning_rate) {
     momentum_A_ = alpha_ * momentum_A_ + learning_rate * u.transpose() * x.transpose();
     momentum_b_ = alpha_ * momentum_b_ + learning_rate * u.transpose();
 
@@ -23,7 +23,7 @@ AdaGradient::AdaGradient(size_t x_size, size_t u_size)
     : A_g_(Matrix::Zero(u_size, x_size)), b_g_(Vector::Zero(u_size)) {
 }
 
-GradientPair AdaGradient::operator()(const Vector& x, const Matrix& u, double learning_rate) {
+GradientPair AdaGradient::operator()(const Vector& x, const RowVector& u, double learning_rate) {
     Matrix A_grad(u.transpose() * x.transpose());
     Vector b_grad(u.transpose());
 
@@ -38,7 +38,7 @@ RMSPropGradient::RMSPropGradient(size_t x_size, size_t u_size, double alpha)
     : A_g_(Matrix::Zero(u_size, x_size)), b_g_(Vector::Zero(u_size)), alpha_(alpha) {
 }
 
-GradientPair RMSPropGradient::operator()(const Vector& x, const Matrix& u, double learning_rate) {
+GradientPair RMSPropGradient::operator()(const Vector& x, const RowVector& u, double learning_rate) {
     Matrix A_grad(u.transpose() * x.transpose());
     Vector b_grad(u.transpose());
 
@@ -56,7 +56,7 @@ AdamGradient::AdamGradient(size_t x_size, size_t u_size, double alpha_linear, do
       alpha_linear_step_(1.0), alpha_square_step_(1.0) {
 }
 
-GradientPair AdamGradient::operator()(const Vector& x, const Matrix& u, double learning_rate) {
+GradientPair AdamGradient::operator()(const Vector& x, const RowVector& u, double learning_rate) {
     Matrix A_grad(u.transpose() * x.transpose());
     Vector b_grad(u.transpose());
 

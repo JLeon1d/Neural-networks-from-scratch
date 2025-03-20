@@ -26,9 +26,6 @@ public:
 
     void TrainSingle(const DataSample& data_sample);
 
-    // useless
-    // void TrainBatch(const DataBatch& data_batch);
-
     Vector Predict(const Vector& features) const;
     
     // can paralel here, is it worth?

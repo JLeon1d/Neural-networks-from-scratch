@@ -21,7 +21,7 @@ public:
     LinearLayer& operator=(LinearLayer&& oth) = default;
 
     Vector Forward(const Vector& x) const;
-    Matrix Backward(const Vector& x, const Matrix& u, GradientFunction& gf, long double lambda);
+    Matrix Backward(const Vector& x, const RowVector& u, GradientFunction& gf, long double lambda);
 
     ~LinearLayer() = default;
 
@@ -57,7 +57,7 @@ public:
     NonLinearLayer& operator=(NonLinearLayer&& oth) noexcept = default;
 
     Vector Forward(const Vector& x) const;
-    Matrix Backward(const Vector& x, const Matrix& u, GradientFunction& gf, long double lambda);
+    Matrix Backward(const Vector& x, const RowVector& u, GradientFunction& gf, long double lambda);
 
     // maybe make those functions private?
 

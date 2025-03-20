@@ -1,5 +1,6 @@
 #include "layer.h"
 #include "Eigen/Core"
+#include "LinearAlgebra.h"
 #include "gradient.h"
 
 #include <stdexcept>
@@ -19,7 +20,7 @@ Vector LinearLayer::Forward(const Vector& x) const {
     return A * x + b;
 }
 
-Matrix LinearLayer::Backward(const Vector& x, const Matrix& u, GradientFunction& gf, long double lambda) {
+Matrix LinearLayer::Backward(const Vector& x, const RowVector& u, GradientFunction& gf, long double lambda) {
     if (u.rows() != 1 or u.cols() != out_size_) {
         throw std::runtime_error("Wrong backward vector size");
     }
@@ -77,7 +78,7 @@ Vector NonLinearLayer::Forward(const Vector& x) const {
     return f_(x); 
 }
 
-Matrix NonLinearLayer::Backward(const Vector& x, const Matrix& u, GradientFunction& _, long double __) {
+Matrix NonLinearLayer::Backward(const Vector& x, const RowVector& u, GradientFunction& _, long double __) {
     return b_(x, u);
 }
 

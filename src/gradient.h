@@ -22,7 +22,7 @@ public:
 
     ClassicGradient& operator=(ClassicGradient&& oth) = default;
 
-    GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate);
+    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
 private:
 };
 
@@ -40,7 +40,7 @@ public:
 
     MomentumGradient& operator=(MomentumGradient&& oth) = default;
 
-    GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate);
+    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
 
     ~MomentumGradient() = default;
 
@@ -65,7 +65,7 @@ public:
     
     AdaGradient& operator=(AdaGradient&& oth) = default;
     
-    GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate);
+    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
     
     ~AdaGradient() = default;
 private:
@@ -88,7 +88,7 @@ public:
     
     RMSPropGradient& operator=(RMSPropGradient&& oth) = default;
     
-    GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate);
+    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
     
     ~RMSPropGradient() = default;
 private:
@@ -115,7 +115,7 @@ public:
         
     AdamGradient& operator=(AdamGradient&& oth) = default;
         
-    GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate);
+    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
         
     ~AdamGradient() = default;
 private:
@@ -134,7 +134,7 @@ private:
 template<class TBase>
 class IGradientFunction : public TBase {
 public:
-    virtual GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate) = 0;
+    virtual GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate) = 0;
 };
 
 template<class TBase, class TObject>
@@ -143,7 +143,7 @@ class CGradientFunctionImpl : public TBase {
 public:
     using CBase::CBase;
 
-    GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate) override {
+    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate) override {
         return CBase::Object()(x, u, learning_rate);
     }
 };

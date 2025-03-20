@@ -1,4 +1,5 @@
 #include "loss.h"
+#include "LinearAlgebra.h"
 #include <stdexcept>
 
 namespace NeuralNetwork {
@@ -21,7 +22,7 @@ double LossFunction::Loss(const Vector& predicted, const Vector& target) const {
     return loss_(predicted, target);
 }
 
-Matrix LossFunction::Gradient(const Vector& predicted, const Vector& target) const {
+RowVector LossFunction::Gradient(const Vector& predicted, const Vector& target) const {
     return gradient_(predicted, target);
 }
 
@@ -33,7 +34,7 @@ double LossFunction::MSELoss(const Vector& predicted, const Vector& target) {
     return (predicted - target).array().square().mean();
 }
 
-Matrix LossFunction::MSEGradient(const Vector& predicted, const Vector& target) {
+RowVector LossFunction::MSEGradient(const Vector& predicted, const Vector& target) {
     return ((predicted - target).array() * 2.0/predicted.size()).matrix().transpose();
 }
 
@@ -43,7 +44,7 @@ double LossFunction::CrossEntropyLoss(const Vector& predicted, const Vector& tar
     return -p_log.sum();
 }
 
-Matrix LossFunction::CrossEntropyGradient(const Vector& predicted, const Vector& target) {
+RowVector LossFunction::CrossEntropyGradient(const Vector& predicted, const Vector& target) {
     return (predicted - target).transpose();
 }
 
