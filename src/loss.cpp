@@ -19,17 +19,17 @@ LossFunction::LossFunction(LossFunction::Default func) {
 }
 
 double LossFunction::Loss(const Vector& predicted, const Vector& target) const {
+    assert(loss_);
     return loss_(predicted, target);
 }
 
 RowVector LossFunction::Gradient(const Vector& predicted, const Vector& target) const {
+    assert(gradient_);
     return gradient_(predicted, target);
 }
 
 double LossFunction::MSELoss(const Vector& predicted, const Vector& target) {
-    if (predicted.size() != target.size()) {
-        throw std::runtime_error("Vectors have different sizes");
-    }
+    assert(predicted.size() == target.size());
 
     return (predicted - target).array().square().mean();
 }

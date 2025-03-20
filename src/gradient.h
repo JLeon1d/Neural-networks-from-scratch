@@ -12,14 +12,11 @@ using FuncType = GradientPair(const Vector&, const Matrix&, double);
 
 class ClassicGradient {
 public:
-    explicit ClassicGradient() = default;
+    ClassicGradient() = default;
 
     ClassicGradient(const ClassicGradient& oth) = delete;
-
     ClassicGradient(ClassicGradient&& oth) = default;
-
     ClassicGradient& operator=(const ClassicGradient& oth) = delete;
-
     ClassicGradient& operator=(ClassicGradient&& oth) = default;
 
     GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
@@ -30,19 +27,16 @@ class MomentumGradient {
 public:
     static constexpr double kDefaultAlpha = 0.9;
 
-    explicit MomentumGradient(size_t x_size, size_t u_size, double alpha = kDefaultAlpha);
+    MomentumGradient(size_t x_size, size_t u_size, double alpha = kDefaultAlpha);
 
     MomentumGradient(const MomentumGradient& oth) = delete;
-
     MomentumGradient(MomentumGradient&& oth) = default;
-
     MomentumGradient& operator=(const MomentumGradient& oth) = delete;
-
     MomentumGradient& operator=(MomentumGradient&& oth) = default;
 
-    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
-
     ~MomentumGradient() = default;
+
+    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
 
 private:
     Matrix momentum_A_;
@@ -55,19 +49,17 @@ class AdaGradient {
 public:
     static constexpr double epsilon = 1e-8;
 
-    explicit AdaGradient(size_t x_size, size_t u_size);
+    AdaGradient(size_t x_size, size_t u_size);
 
     AdaGradient(const AdaGradient& oth) = delete;
-
     AdaGradient(AdaGradient&& oth) = default;
-
     AdaGradient& operator=(const AdaGradient& oth) = delete;
-    
     AdaGradient& operator=(AdaGradient&& oth) = default;
-    
-    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
-    
+
     ~AdaGradient() = default;
+
+    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
+
 private:
     Matrix A_g_;
     Vector b_g_;
@@ -78,19 +70,16 @@ public:
     static constexpr double kDefaultAlpha = 0.9;
     static constexpr double epsilon = 1e-8;
 
-    explicit RMSPropGradient(size_t x_size, size_t u_size, double alpha = kDefaultAlpha);
+    RMSPropGradient(size_t x_size, size_t u_size, double alpha = kDefaultAlpha);
     
     RMSPropGradient(const RMSPropGradient& oth) = delete;
-    
     RMSPropGradient(RMSPropGradient&& oth) = default;
-    
     RMSPropGradient& operator=(const RMSPropGradient& oth) = delete;
-    
     RMSPropGradient& operator=(RMSPropGradient&& oth) = default;
-    
-    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
-    
     ~RMSPropGradient() = default;
+
+    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
+
 private:
     Matrix A_g_;
     Vector b_g_;
@@ -104,20 +93,18 @@ public:
     static constexpr double kDefaultAlpha = 0.9;
     static constexpr double epsilon = 1e-8;
     
-    explicit AdamGradient(size_t x_size, size_t u_size, double alpha_linear = kDefaultAlpha,
+    AdamGradient(size_t x_size, size_t u_size, double alpha_linear = kDefaultAlpha,
                           double alpha_square = kDefaultAlpha);
-        
+
     AdamGradient(const AdamGradient& oth) = delete;
-        
     AdamGradient(AdamGradient&& oth) = default;
-        
     AdamGradient& operator=(const AdamGradient& oth) = delete;
-        
     AdamGradient& operator=(AdamGradient&& oth) = default;
-        
-    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
-        
+
     ~AdamGradient() = default;
+
+    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
+
 private:
     Matrix A_linear_;
     Matrix A_square_;

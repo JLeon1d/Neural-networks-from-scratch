@@ -15,9 +15,10 @@ public:
         CrossEntropy
     };
 
-    explicit LossFunction(LossFunctionType loss, GradienFunctionType gradient);
-
     explicit LossFunction(Default func);
+    LossFunction(LossFunctionType loss, GradienFunctionType gradient);
+
+    ~LossFunction() = default; 
 
     double Loss(const Vector& predicted, const Vector& target) const;
 
@@ -28,6 +29,7 @@ public:
 
     static double CrossEntropyLoss(const Vector& predicted, const Vector& target);
     static RowVector CrossEntropyGradient(const Vector& predicted, const Vector& target);
+
 private:
     std::function<LossFunctionType> loss_;
     std::function<GradienFunctionType> gradient_;

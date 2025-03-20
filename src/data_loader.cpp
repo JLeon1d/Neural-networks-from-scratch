@@ -7,6 +7,7 @@ DataLoader::DataLoader(const std::string& features_path, const std::string& labl
 }
 
 DataBatch DataLoader::Load() {
+    assert(f_);
     auto raw_data = f_(features_path_, lables_path_);
     if (raw_data.empty()) {
         throw std::logic_error("empty data");

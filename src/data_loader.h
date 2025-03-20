@@ -17,7 +17,7 @@ class DataLoader {
 public:
     using LoadFunction = std::vector<std::pair<std::vector<double>, std::vector<double>>>(const std::string&, const std::string&);
 
-    explicit DataLoader(const std::string& features_path, const std::string& lables_path, LoadFunction f);
+    DataLoader(const std::string& features_path, const std::string& lables_path, LoadFunction f);
 
     DataBatch Load();
 

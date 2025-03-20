@@ -8,27 +8,23 @@
 namespace NeuralNetwork {
 
 LinearLayer::LinearLayer(size_t in_size, size_t out_size)
-    : in_size_(in_size), out_size_(out_size), A(Matrix::Random(out_size, in_size)),
-      b(Vector::Random(out_size)) {
+    : in_size_(in_size), out_size_(out_size), A_(Matrix::Random(out_size, in_size)),
+      b_(Vector::Random(out_size)) {
 }
 
 Vector LinearLayer::Forward(const Vector& x) const {
-    if (x.size() != in_size_) {
-        throw std::runtime_error("Wrong forward vector size");
-    }
+    assert(x.size() == in_size_);
 
-    return A * x + b;
+    return A_ * x + b_;
 }
 
-Matrix LinearLayer::Backward(const Vector& x, const RowVector& u, GradientFunction& gf, long double lambda) {
-    if (u.rows() != 1 or u.cols() != out_size_) {
-        throw std::runtime_error("Wrong backward vector size");
-    }
+Matrix LinearLayer::Backward(const Vector& x, const RowVector& u, /* const */ GradientFunction& gf, double lambda) {
+    assert(u.rows() == 1 and u.cols() == out_size_);
 
-    Matrix next_u(u * A);
+    Matrix next_u(u * A_);
     auto gradients = gf->operator()(x, u, lambda);
-    A += gradients.first;
-    b += gradients.second;
+    A_ += gradients.first;
+    b_ += gradients.second;
 
     return next_u;
 }
@@ -36,49 +32,43 @@ Matrix LinearLayer::Backward(const Vector& x, const RowVector& u, GradientFuncti
 NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
     if (f == DefaultFunctions::Sigmoid) {
         f_ = std::move(Sigmoid);
-        b_ = [](const Vector& x, const Matrix& u) {
-            if (u.size() != x.size()) {
-                throw std::logic_error("NonLinearLayer wrong Backward sizes");
-            }
+        b_ = [](const Vector& x, const RowVector& u) {
+            assert(u.size() == x.size());
 
-            Matrix next_u = u.cwiseProduct(SigmoidDeriv(x));
+            RowVector next_u = u.cwiseProduct(SigmoidDeriv(x));
             return next_u;
         };
     } else if (f == DefaultFunctions::ReLU) {
         f_ = std::move(ReLU);
-        b_ = [](const Vector& x, const Matrix& u) {
-            if (u.size() != x.size()) {
-                throw std::logic_error("NonLinearLayer wrong Backward sizes");
-            }
+        b_ = [](const Vector& x, const RowVector& u) {
+            assert(u.size() == x.size());
 
-            return Matrix(u * ReLUDeriv(x));
+            return RowVector(u * ReLUDeriv(x));
         };
     } else if (f == DefaultFunctions::Softmax) {
         f_ = std::move(Softmax);
-        b_ = [](const Vector& x, const Matrix& u) {
-            if (u.size() != x.size()) {
-                throw std::logic_error("NonLinearLayer wrong Backward sizes");
-            }
+        b_ = [](const Vector& x, const RowVector& u) {
+            assert(u.size() == x.size());
 
-            return Matrix(u * SoftmaxDeriv(x));
+            return RowVector(u * SoftmaxDeriv(x));
         };
     } else if (f == DefaultFunctions::LeakyReLU) {
         f_ = std::move(LeakyReLU);
-        b_ = [](const Vector& x, const Matrix& u) {
-            if (u.size() != x.size()) {
-                throw std::logic_error("NonLinearLayer wrong Backward sizes");
-            }
+        b_ = [](const Vector& x, const RowVector& u) {
+            assert(u.size() == x.size());
 
-            return Matrix(u * LeakyReLUDeriv(x));
+            return RowVector(u * LeakyReLUDeriv(x));
         };
     }
 }
 
 Vector NonLinearLayer::Forward(const Vector& x) const {
+    assert(f_);
     return f_(x); 
 }
 
-Matrix NonLinearLayer::Backward(const Vector& x, const RowVector& u, GradientFunction& _, long double __) {
+Matrix NonLinearLayer::Backward(const Vector& x, const RowVector& u, /* const */ GradientFunction&, double) {
+    assert(b_);
     return b_(x, u);
 }
 

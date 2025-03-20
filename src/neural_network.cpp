@@ -9,9 +9,7 @@ namespace NeuralNetwork {
 Network::Network(const std::vector<size_t>& layer_sizes, double learning_rate, LossFunction lf,
                  GradientFunction::Type gf_type)
     : learning_rate_(learning_rate), loss_function_(std::move(lf)) {
-    if (layer_sizes.size() == 0) {
-        throw std::logic_error("empty layer_sizes");
-    }
+    assert(!layer_sizes.empty());
 
     for (size_t l_id = 0; l_id < layer_sizes.size() - 1; ++l_id) {
         net_.emplace_back(NeuralNetwork::LinearLayer(layer_sizes[l_id], layer_sizes[l_id + 1]));
@@ -29,13 +27,9 @@ Network::Network(const std::vector<size_t>& layer_sizes,
                  const std::vector<NonLinearLayer::DefaultFunctions>& activation_functions,
                  double learning_rate, LossFunction lf, GradientFunction::Initializer gf_initializer)
     : learning_rate_(learning_rate), loss_function_(std::move(lf)) {
-    if (layer_sizes.empty()) {
-        throw std::logic_error("empty layer_sizes");
-    } else if (activation_functions.empty()) {
-        throw std::logic_error("empty activation_functions");
-    } else if (layer_sizes.size() != activation_functions.size() + 1) {
-        throw std::logic_error("layer_sizes and activation_function sizes mismatch");
-    }
+    assert(!layer_sizes.empty());
+    assert(!activation_functions.empty());
+    assert(layer_sizes.size() == activation_functions.size() + 1);
 
     for (size_t l_id = 0; l_id < layer_sizes.size() - 1; ++l_id) {
         net_.emplace_back(NeuralNetwork::LinearLayer(layer_sizes[l_id], layer_sizes[l_id + 1]));
@@ -108,6 +102,8 @@ double Network::CheckLoss(const std::vector<DataSample>& data) const {
 }
 
 double Network::CheckAccuracy(const std::vector<DataSample>& data, std::function<Network::AccuracyPredicat> f) const {
+    assert(f);
+
     size_t correct_count = 0;
     for (size_t i = 0; i < data.size(); ++i) {
         auto predicted = Predict(data[i].features);

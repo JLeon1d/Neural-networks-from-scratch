@@ -13,16 +13,18 @@ class Network {
 public:
     static constexpr double kDefaultLearningRate = 0.2;
 
-    explicit Network(const std::vector<size_t>& layer_sizes, double learning_rate=kDefaultLearningRate,
+    Network(const std::vector<size_t>& layer_sizes, double learning_rate=kDefaultLearningRate,
                      LossFunction lf = LossFunction(LossFunction::Default::MSE),
                      GradientFunction::Type gf_type = GradientFunction::Type::Classic);
 
     // (layer_sizes.size()) should be equal to (activation_functions.size() + 1)
-    explicit Network(const std::vector<size_t>& layer_sizes,
+    Network(const std::vector<size_t>& layer_sizes,
                      const std::vector<NonLinearLayer::DefaultFunctions>& activation_functions,
                      double learning_rate = kDefaultLearningRate,
                      LossFunction lf = LossFunction(LossFunction::Default::MSE),
                      GradientFunction::Initializer gf_initializer = {GradientFunction::Type::Classic, {}});
+
+    ~Network() = default;
 
     void TrainSingle(const DataSample& data_sample);
 
