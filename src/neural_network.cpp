@@ -1,5 +1,4 @@
 #include "neural_network.h"
-#include "Eigen/Core"
 #include "data_loader.h"
 #include "gradient.h"
 #include "loss.h"
@@ -76,7 +75,7 @@ Network::Network(const std::vector<size_t>& layer_sizes,
 }
 
 void Network::TrainSingle(const DataSample& data_sample) {
-    std::vector<Eigen::VectorXd> xs(net_.size() + 1);
+    std::vector<Vector> xs(net_.size() + 1);
     xs[0] = data_sample.features;
 
     for (size_t i = 0; i < net_.size(); ++i) {
@@ -89,7 +88,7 @@ void Network::TrainSingle(const DataSample& data_sample) {
     }
 }
 
-VectorXd Network::Predict(const VectorXd& features) const {
+Vector Network::Predict(const Vector& features) const {
     auto x = features;
     for (size_t i = 0; i < net_.size(); ++i) {
         x = net_[i]->Forward(x);

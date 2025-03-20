@@ -1,17 +1,14 @@
 #pragma once
 
-#include "Eigen/Core"
+#include "LinearAlgebra.h"
 #include "AnyMovable.h"
 
 #include <initializer_list>
 
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
-
 namespace NeuralNetwork {
 
-using GradientPair = std::pair<MatrixXd, VectorXd>;
-using FuncType = GradientPair(const VectorXd&, const MatrixXd&, double);
+using GradientPair = std::pair<Matrix, Vector>;
+using FuncType = GradientPair(const Vector&, const Matrix&, double);
 
 class ClassicGradient {
 public:
@@ -25,7 +22,7 @@ public:
 
     ClassicGradient& operator=(ClassicGradient&& oth) = default;
 
-    GradientPair operator()(const VectorXd& x, const MatrixXd& u, double learning_rate);
+    GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate);
 private:
 };
 
@@ -43,13 +40,13 @@ public:
 
     MomentumGradient& operator=(MomentumGradient&& oth) = default;
 
-    GradientPair operator()(const VectorXd& x, const MatrixXd& u, double learning_rate);
+    GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate);
 
     ~MomentumGradient() = default;
 
 private:
-    MatrixXd momentum_A_;
-    VectorXd momentum_b_;
+    Matrix momentum_A_;
+    Vector momentum_b_;
 
     double alpha_;
 };
@@ -68,12 +65,12 @@ public:
     
     AdaGradient& operator=(AdaGradient&& oth) = default;
     
-    GradientPair operator()(const VectorXd& x, const MatrixXd& u, double learning_rate);
+    GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate);
     
     ~AdaGradient() = default;
 private:
-    MatrixXd A_g_;
-    VectorXd b_g_;
+    Matrix A_g_;
+    Vector b_g_;
 };
 
 class RMSPropGradient {
@@ -91,12 +88,12 @@ public:
     
     RMSPropGradient& operator=(RMSPropGradient&& oth) = default;
     
-    GradientPair operator()(const VectorXd& x, const MatrixXd& u, double learning_rate);
+    GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate);
     
     ~RMSPropGradient() = default;
 private:
-    MatrixXd A_g_;
-    VectorXd b_g_;
+    Matrix A_g_;
+    Vector b_g_;
     
     double alpha_;
 };
@@ -118,14 +115,14 @@ public:
         
     AdamGradient& operator=(AdamGradient&& oth) = default;
         
-    GradientPair operator()(const VectorXd& x, const MatrixXd& u, double learning_rate);
+    GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate);
         
     ~AdamGradient() = default;
 private:
-    MatrixXd A_linear_;
-    MatrixXd A_square_;
-    VectorXd b_linear_;
-    VectorXd b_square_;
+    Matrix A_linear_;
+    Matrix A_square_;
+    Vector b_linear_;
+    Vector b_square_;
 
     double alpha_linear_;
     double alpha_square_;
@@ -137,7 +134,7 @@ private:
 template<class TBase>
 class IGradientFunction : public TBase {
 public:
-    virtual GradientPair operator()(const VectorXd& x, const MatrixXd& u, double learning_rate) = 0;
+    virtual GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate) = 0;
 };
 
 template<class TBase, class TObject>
@@ -146,7 +143,7 @@ class CGradientFunctionImpl : public TBase {
 public:
     using CBase::CBase;
 
-    GradientPair operator()(const VectorXd& x, const MatrixXd& u, double learning_rate) override {
+    GradientPair operator()(const Vector& x, const Matrix& u, double learning_rate) override {
         return CBase::Object()(x, u, learning_rate);
     }
 };

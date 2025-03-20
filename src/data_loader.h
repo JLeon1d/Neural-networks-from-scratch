@@ -1,17 +1,13 @@
 #pragma once
 
-#include "Eigen/Core"
-#include <Eigen/Dense>
-// #include <type_traits>
+#include "LinearAlgebra.h"
 #include <utility>
-
-using Eigen::VectorXd;
 
 namespace NeuralNetwork {
 
 struct DataSample {
-    VectorXd features;
-    VectorXd target;
+    Vector features;
+    Vector target;
 };
 
 using DataBatch = std::vector<DataSample>;

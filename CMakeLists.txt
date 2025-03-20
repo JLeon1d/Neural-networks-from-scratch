@@ -23,11 +23,12 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 add_library(neural-net "src/data_loader.cpp" "src/layer.cpp" "src/loss.cpp" "src/neural_network.cpp" "src/gradient.cpp")
 # add_library(neural-net INTERFACE) # for actual testing
 
+# без этого не работает(
+# include_directories(pkg)
 target_link_libraries(neural-net Eigen3::Eigen)
 target_link_libraries(neural-net AnyMovable)
 
-# For all local libraries
-# target_include_directories(AnyMovable INTERFACE "${PROJECT_SOURCE_DIR}/pkg/AnyObject")
+# To be able to import headers from /src (i think)
 target_include_directories(neural-net INTERFACE "${PROJECT_SOURCE_DIR}/src")
 
 if(BUILD_TESTING)

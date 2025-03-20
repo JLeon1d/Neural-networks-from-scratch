@@ -1,4 +1,4 @@
-#include "Eigen/Core"
+#include "LinearAlgebra.h"
 #include "gradient.h"
 #include "layer.h"
 #include "loss.h"
@@ -11,7 +11,7 @@
 #include <chrono>
 
 // take digit with max probability as predicted label
-bool is_correct(const VectorXd& predicted, const VectorXd& target) {
+bool is_correct(const NeuralNetwork::Vector& predicted, const NeuralNetwork::Vector& target) {
     size_t answer = 0;
     for (size_t i = 1; i < predicted.size(); ++i) {
         if (predicted[i] > predicted[answer]) {
@@ -26,8 +26,9 @@ using ActivationFunctions = NeuralNetwork::NonLinearLayer::DefaultFunctions;
 using LossFunctions = NeuralNetwork::LossFunction::Default;
 using GradientFunctions = NeuralNetwork::GradientFunction::Type;
 
-// in /build: cmake .. && make && ./test_mnist
+// in /build: cmake .. && make && ./tests/MNIST/test_mnist
 int main() {
+    Eigen::setNbThreads(2);  // does it work
     auto train_features_path = "../tests/MNIST/train-images.idx3-ubyte";
     auto train_lables_path = "../tests/MNIST/train-labels.idx1-ubyte";
     auto test_features_path = "../tests/MNIST/t10k-images.idx3-ubyte";
@@ -39,8 +40,8 @@ int main() {
     auto train_data = train_data_loader.Load();
     auto test_data = test_data_loader.Load();
 
-    train_data.resize(8000);
-    test_data.resize(2000);
+    // train_data.resize(20000);
+    // test_data.resize(2000);
 
     std::cout << "Loaded " << train_data.size() << " train data samples" << std::endl;
     std::cout << "Loaded " << test_data.size() << " test data samples" << std::endl;
@@ -49,9 +50,9 @@ int main() {
     NeuralNetwork::Network net(
         {784, 200, 80, 10},
         {ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid},
-        0.002,
+        0.0004,
         NeuralNetwork::LossFunction(LossFunctions::MSE),
-        {GradientFunctions::Adam, {}}
+        {GradientFunctions::Adam, {0.98, 0.98}}
     );
 
     {  // calculate expected epoch time
@@ -67,16 +68,14 @@ int main() {
         std::cout << "Expected epoch time (minutes): " << expected_epoch_minutes << std::endl;
     }
 
-    size_t progress_p = 1000;
+    size_t progress_p = 10000;
     size_t batch_size = 100;
     for (size_t epoch_id = 0; epoch_id < 30; ++epoch_id) {
         for (size_t i = 0; i < train_data.size(); ++i) {
             net.TrainSingle(train_data[i]);
-            /*
             if (i % progress_p == 0) {
                 std::cout << i << " / " << train_data.size() << std::endl;
             }
-            */
         }
 
         std::cout << "Epoch " << epoch_id + 1 << " is done" << std::endl;

@@ -1,12 +1,10 @@
 #pragma once
 
-#include "Eigen/Core"
+#include "LinearAlgebra.h"
 #include "data_loader.h"
 #include "layer.h"
 #include "loss.h"
 #include "gradient.h"
-
-using Eigen::VectorXd;
 
 namespace NeuralNetwork {
 
@@ -31,12 +29,12 @@ public:
     // useless
     // void TrainBatch(const DataBatch& data_batch);
 
-    VectorXd Predict(const VectorXd& features) const;
+    Vector Predict(const Vector& features) const;
     
     // can paralel here, is it worth?
     double CheckLoss(const std::vector<DataSample>& data) const;
 
-    using AccuracyPredicat = bool(const VectorXd&, const VectorXd&);
+    using AccuracyPredicat = bool(const Vector&, const Vector&);
     double CheckAccuracy(const std::vector<DataSample>& data, std::function<AccuracyPredicat> f) const;
 
     void SetLearningRate(double learning_rate);

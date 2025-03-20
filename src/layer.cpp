@@ -7,11 +7,11 @@
 namespace NeuralNetwork {
 
 LinearLayer::LinearLayer(size_t in_size, size_t out_size)
-    : in_size_(in_size), out_size_(out_size), A(MatrixXd::Random(out_size, in_size)),
-      b(VectorXd::Random(out_size)) {
+    : in_size_(in_size), out_size_(out_size), A(Matrix::Random(out_size, in_size)),
+      b(Vector::Random(out_size)) {
 }
 
-VectorXd LinearLayer::Forward(const VectorXd& x) const {
+Vector LinearLayer::Forward(const Vector& x) const {
     if (x.size() != in_size_) {
         throw std::runtime_error("Wrong forward vector size");
     }
@@ -19,12 +19,12 @@ VectorXd LinearLayer::Forward(const VectorXd& x) const {
     return A * x + b;
 }
 
-MatrixXd LinearLayer::Backward(const VectorXd& x, const MatrixXd& u, GradientFunction& gf, long double lambda) {
+Matrix LinearLayer::Backward(const Vector& x, const Matrix& u, GradientFunction& gf, long double lambda) {
     if (u.rows() != 1 or u.cols() != out_size_) {
         throw std::runtime_error("Wrong backward vector size");
     }
 
-    MatrixXd next_u(u * A);
+    Matrix next_u(u * A);
     auto gradients = gf->operator()(x, u, lambda);
     A += gradients.first;
     b += gradients.second;
@@ -35,91 +35,91 @@ MatrixXd LinearLayer::Backward(const VectorXd& x, const MatrixXd& u, GradientFun
 NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
     if (f == DefaultFunctions::Sigmoid) {
         f_ = std::move(Sigmoid);
-        b_ = [](const VectorXd& x, const MatrixXd& u) {
+        b_ = [](const Vector& x, const Matrix& u) {
             if (u.size() != x.size()) {
                 throw std::logic_error("NonLinearLayer wrong Backward sizes");
             }
 
-            MatrixXd next_u = u.cwiseProduct(SigmoidDeriv(x));
+            Matrix next_u = u.cwiseProduct(SigmoidDeriv(x));
             return next_u;
         };
     } else if (f == DefaultFunctions::ReLU) {
         f_ = std::move(ReLU);
-        b_ = [](const VectorXd& x, const MatrixXd& u) {
+        b_ = [](const Vector& x, const Matrix& u) {
             if (u.size() != x.size()) {
                 throw std::logic_error("NonLinearLayer wrong Backward sizes");
             }
 
-            return MatrixXd(u * ReLUDeriv(x));
+            return Matrix(u * ReLUDeriv(x));
         };
     } else if (f == DefaultFunctions::Softmax) {
         f_ = std::move(Softmax);
-        b_ = [](const VectorXd& x, const MatrixXd& u) {
+        b_ = [](const Vector& x, const Matrix& u) {
             if (u.size() != x.size()) {
                 throw std::logic_error("NonLinearLayer wrong Backward sizes");
             }
 
-            return MatrixXd(u * SoftmaxDeriv(x));
+            return Matrix(u * SoftmaxDeriv(x));
         };
     } else if (f == DefaultFunctions::LeakyReLU) {
         f_ = std::move(LeakyReLU);
-        b_ = [](const VectorXd& x, const MatrixXd& u) {
+        b_ = [](const Vector& x, const Matrix& u) {
             if (u.size() != x.size()) {
                 throw std::logic_error("NonLinearLayer wrong Backward sizes");
             }
 
-            return MatrixXd(u * LeakyReLUDeriv(x));
+            return Matrix(u * LeakyReLUDeriv(x));
         };
     }
 }
 
-VectorXd NonLinearLayer::Forward(const VectorXd& x) const {
+Vector NonLinearLayer::Forward(const Vector& x) const {
     return f_(x); 
 }
 
-MatrixXd NonLinearLayer::Backward(const VectorXd& x, const MatrixXd& u, GradientFunction& _, long double __) {
+Matrix NonLinearLayer::Backward(const Vector& x, const Matrix& u, GradientFunction& _, long double __) {
     return b_(x, u);
 }
 
-VectorXd NonLinearLayer::Sigmoid(const VectorXd& x) {
+Vector NonLinearLayer::Sigmoid(const Vector& x) {
     return (1.0 / (1.0 + (-x.array()).exp())).matrix();
 }
 
-MatrixXd NonLinearLayer::SigmoidDeriv(const VectorXd& x) {
-    return MatrixXd(Sigmoid(x).array() * (-Sigmoid(x).array() + 1)).transpose();
+Matrix NonLinearLayer::SigmoidDeriv(const Vector& x) {
+    return Matrix(Sigmoid(x).array() * (-Sigmoid(x).array() + 1)).transpose();
 }
 
-VectorXd NonLinearLayer::ReLU(const VectorXd& x) {
+Vector NonLinearLayer::ReLU(const Vector& x) {
     return (x.array().max(0)).matrix();
 }
 
-MatrixXd NonLinearLayer::ReLUDeriv(const VectorXd& x) {
+Matrix NonLinearLayer::ReLUDeriv(const Vector& x) {
     return (0.5 + (x.array().sign())/2.0).matrix().asDiagonal();
 }
 
-VectorXd NonLinearLayer::Softmax(const VectorXd& x) {
+Vector NonLinearLayer::Softmax(const Vector& x) {
     double m = x.maxCoeff();  // to prevent overflow
-    VectorXd exp_x = (x.array() - m).exp();
+    Vector exp_x = (x.array() - m).exp();
     double exp_sum = exp_x.sum();
     return exp_x / exp_sum;
 }
 
-MatrixXd NonLinearLayer::SoftmaxDeriv(const VectorXd& x) {
-    VectorXd s = Softmax(x);
+Matrix NonLinearLayer::SoftmaxDeriv(const Vector& x) {
+    Vector s = Softmax(x);
 
-    MatrixXd d = -s * s.transpose(); // -s_i * s_j
+    Matrix d = -s * s.transpose(); // -s_i * s_j
     d.diagonal() += s;  // -s_i * s_j + (i == j) * s_i
 
     return d;
 }
 
-VectorXd NonLinearLayer::LeakyReLU(const VectorXd& x) {
+Vector NonLinearLayer::LeakyReLU(const Vector& x) {
     double alpha = 0.01;
     return x.array().max(alpha * x.array()).matrix();
 }
 
 // not exactly deriv
-MatrixXd NonLinearLayer::LeakyReLUDeriv(const VectorXd& x) {
+Matrix NonLinearLayer::LeakyReLUDeriv(const Vector& x) {
     return (0.01 + 0.5 + (x.array().sign())/2.0).matrix().asDiagonal();
 }
 

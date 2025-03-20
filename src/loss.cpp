@@ -17,15 +17,15 @@ LossFunction::LossFunction(LossFunction::Default func) {
     }
 }
 
-double LossFunction::Loss(const VectorXd& predicted, const VectorXd& target) const {
+double LossFunction::Loss(const Vector& predicted, const Vector& target) const {
     return loss_(predicted, target);
 }
 
-MatrixXd LossFunction::Gradient(const VectorXd& predicted, const VectorXd& target) const {
+Matrix LossFunction::Gradient(const Vector& predicted, const Vector& target) const {
     return gradient_(predicted, target);
 }
 
-double LossFunction::MSELoss(const VectorXd& predicted, const VectorXd& target) {
+double LossFunction::MSELoss(const Vector& predicted, const Vector& target) {
     if (predicted.size() != target.size()) {
         throw std::runtime_error("Vectors have different sizes");
     }
@@ -33,17 +33,17 @@ double LossFunction::MSELoss(const VectorXd& predicted, const VectorXd& target) 
     return (predicted - target).array().square().mean();
 }
 
-MatrixXd LossFunction::MSEGradient(const VectorXd& predicted, const VectorXd& target) {
+Matrix LossFunction::MSEGradient(const Vector& predicted, const Vector& target) {
     return ((predicted - target).array() * 2.0/predicted.size()).matrix().transpose();
 }
 
-double LossFunction::CrossEntropyLoss(const VectorXd& predicted, const VectorXd& target) {
+double LossFunction::CrossEntropyLoss(const Vector& predicted, const Vector& target) {
     Eigen::ArrayXd p_log = predicted.array().log();
     p_log *= target.array();
     return -p_log.sum();
 }
 
-MatrixXd LossFunction::CrossEntropyGradient(const VectorXd& predicted, const VectorXd& target) {
+Matrix LossFunction::CrossEntropyGradient(const Vector& predicted, const Vector& target) {
     return (predicted - target).transpose();
 }
 
