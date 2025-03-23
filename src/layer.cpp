@@ -6,17 +6,17 @@
 namespace NeuralNetwork {
 
 LinearLayer::LinearLayer(size_t in_size, size_t out_size)
-    : in_size_(in_size), out_size_(out_size), A_(Matrix::Random(out_size, in_size)), b_(Vector::Random(out_size)) {
+    : A_(Matrix::Random(out_size, in_size)), b_(Vector::Random(out_size)) {
 }
 
 Vector LinearLayer::Forward(const Vector& x) const {
-    assert(x.size() == in_size_);
+    assert(x.size() == A_.cols() && "Wrong input vector size");
 
     return A_ * x + b_;
 }
 
 Matrix LinearLayer::Backward(const Vector& x, const RowVector& u, /* const */ GradientFunction& gf, double lambda) {
-    assert(u.rows() == 1 and u.cols() == out_size_);
+    assert(u.rows() == 1 && u.cols() == A_.rows() && "Wrong gradient vector size");
 
     Matrix next_u(u * A_);
     auto gradients = gf->operator()(x, u, lambda);
@@ -26,6 +26,7 @@ Matrix LinearLayer::Backward(const Vector& x, const RowVector& u, /* const */ Gr
     return next_u;
 }
 
+/*
 NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
     if (f == DefaultFunctions::Sigmoid) {
         forward_ = std::move(Sigmoid);
@@ -58,6 +59,15 @@ NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
         };
     }
 }
+*/
+
+NonLinearLayer::NonLinearLayer(ActivationType type)
+    : forward_(ActivationSelector::forward(type)), backward_(ActivationSelector::backward(type)) {
+}
+
+NonLinearLayer::NonLinearLayer(ForwardType forward, BackwardType backward)
+    : forward_(std::move(forward)), backward_(std::move(backward)) {
+}
 
 Vector NonLinearLayer::Forward(const Vector& x) const {
     assert(forward_);
@@ -69,38 +79,7 @@ Matrix NonLinearLayer::Backward(const Vector& x, const RowVector& u, /* const */
     return backward_(x, u);
 }
 
-Vector NonLinearLayer::Sigmoid(const Vector& x) {
-    return (1.0 / (1.0 + (-x.array()).exp())).matrix();
-}
-
-Matrix NonLinearLayer::SigmoidDeriv(const Vector& x) {
-    return Matrix(Sigmoid(x).array() * (-Sigmoid(x).array() + 1)).transpose();
-}
-
-Vector NonLinearLayer::ReLU(const Vector& x) {
-    return (x.array().max(0)).matrix();
-}
-
-Matrix NonLinearLayer::ReLUDeriv(const Vector& x) {
-    return (0.5 + (x.array().sign()) / 2.0).matrix().asDiagonal();
-}
-
-Vector NonLinearLayer::Softmax(const Vector& x) {
-    double m = x.maxCoeff();  // to prevent overflow
-    Vector exp_x = (x.array() - m).exp();
-    double exp_sum = exp_x.sum();
-    return exp_x / exp_sum;
-}
-
-Matrix NonLinearLayer::SoftmaxDeriv(const Vector& x) {
-    Vector s = Softmax(x);
-
-    Matrix d = -s * s.transpose();  // -s_i * s_j
-    d.diagonal() += s;              // -s_i * s_j + (i == j) * s_i
-
-    return d;
-}
-
+/* work in progress
 Vector NonLinearLayer::LeakyReLU(const Vector& x) {
     double alpha = 0.01;
     return x.array().max(alpha * x.array()).matrix();
@@ -110,5 +89,6 @@ Vector NonLinearLayer::LeakyReLU(const Vector& x) {
 Matrix NonLinearLayer::LeakyReLUDeriv(const Vector& x) {
     return (0.01 + 0.5 + (x.array().sign()) / 2.0).matrix().asDiagonal();
 }
+*/
 
 };  // namespace NeuralNetwork

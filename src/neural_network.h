@@ -20,8 +20,7 @@ public:
     */
 
     // (layer_sizes.size()) should be equal to (activation_functions.size() + 1)
-    Network(const std::vector<size_t>& layer_sizes,
-            const std::vector<NonLinearLayer::DefaultFunctions>& activation_functions,
+    Network(const std::vector<size_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
             double learning_rate = kDefaultLearningRate, LossFunction lf = LossFunction(LossType::Mse),
             GradientFunction::Initializer gf_initializer = {GradientFunction::Type::Classic, {}});
 

@@ -25,9 +25,8 @@ Network::Network(const std::vector<size_t>& layer_sizes, double learning_rate, L
 }
 */
 
-Network::Network(const std::vector<size_t>& layer_sizes,
-                 const std::vector<NonLinearLayer::DefaultFunctions>& activation_functions, double learning_rate,
-                 LossFunction lf, GradientFunction::Initializer gf_initializer)
+Network::Network(const std::vector<size_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
+                 double learning_rate, LossFunction lf, GradientFunction::Initializer gf_initializer)
     : learning_rate_(learning_rate), loss_function_(std::move(lf)) {
     assert(!layer_sizes.empty());
     assert(!activation_functions.empty());

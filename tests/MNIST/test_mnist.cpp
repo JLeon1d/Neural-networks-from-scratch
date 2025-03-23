@@ -22,7 +22,7 @@ bool is_correct(const NeuralNetwork::Vector& predicted, const NeuralNetwork::Vec
     return (target[answer] == 1.0);
 }
 
-using ActivationFunctions = NeuralNetwork::NonLinearLayer::DefaultFunctions;
+using ActivationType = NeuralNetwork::ActivationType;
 using GradientFunctions = NeuralNetwork::GradientFunction::Type;
 
 // in /build: cmake .. && make && ./tests/MNIST/test_mnist
@@ -39,16 +39,17 @@ int main() {
     auto train_data = train_data_loader.Load();
     auto test_data = test_data_loader.Load();
 
-    // train_data.resize(20000);
-    // test_data.resize(2000);
+    train_data.resize(6000);
+    test_data.resize(2000);
 
     std::cout << "Loaded " << train_data.size() << " train data samples" << std::endl;
     std::cout << "Loaded " << test_data.size() << " test data samples" << std::endl;
 
     // can not put user-written gradient decent here(
+    // why ActivationTypes but LossFunction(not LossType) - can not use custom activation functions
     NeuralNetwork::Network net(
-        {784, 200, 80, 10}, {ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid},
-        0.0004, NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse), {GradientFunctions::Adam, {0.98, 0.98}});
+        {784, 200, 80, 10}, {ActivationType::Sigmoid, ActivationType::Sigmoid, ActivationType::Sigmoid}, 0.002,
+        NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse), {GradientFunctions::Adam, {0.98, 0.98}});
 
     {  // calculate expected epoch time
         size_t sample_size = 100;

@@ -8,6 +8,102 @@
 
 namespace NeuralNetwork {
 
+enum class ActivationType { Sigmoid, ReLU, Softmax, LeakyReLU };
+
+template <ActivationType type>
+struct ActivationData;
+
+template <>
+struct ActivationData<ActivationType::Sigmoid> {
+    static Vector forward(const Vector& x) {
+        return (1.0 / (1.0 + (-x.array()).exp())).matrix();
+    }
+
+    static RowVector backward(const Vector& x, const RowVector& u) {
+        assert(u.size() == x.size());
+        Matrix deriv = Matrix(forward(x).array() * (-forward(x).array() + 1)).transpose();
+        return u.cwiseProduct(deriv);
+    }
+};
+
+template <>
+struct ActivationData<ActivationType::ReLU> {
+    static Vector forward(const Vector& x) {
+        return (x.array().max(0)).matrix();
+    }
+
+    static RowVector backward(const Vector& x, const RowVector& u) {
+        assert(u.size() == x.size());
+        Matrix deriv = (0.5 + (x.array().sign()) / 2.0).matrix().asDiagonal();
+        return u * deriv;
+    }
+};
+
+template <>
+struct ActivationData<ActivationType::Softmax> {
+    static Vector forward(const Vector& x) {
+        double m = x.maxCoeff();  // to prevent overflow
+        Vector exp_x = (x.array() - m).exp();
+        double exp_sum = exp_x.sum();
+        return exp_x / exp_sum;
+    }
+
+    static RowVector backward(const Vector& x, const RowVector& u) {
+        assert(u.size() == x.size());
+
+        Vector s = forward(x);
+        Matrix deriv = -s * s.transpose();  // -s_i * s_j
+        deriv.diagonal() += s;              // -s_i * s_j + (i == j) * s_i
+
+        return u * deriv;
+    }
+};
+
+struct ActivationSelector {
+    using ForwardType = Vector(Vector const&);
+    using BackwardType = RowVector(Vector const&, RowVector const&);
+
+    static ForwardType* forward(ActivationType type) {
+        ForwardType* ptr;
+        switch (type) {
+            case ActivationType::Sigmoid:
+                ptr = &ActivationData<ActivationType::Sigmoid>::forward;
+                break;
+            case ActivationType::ReLU:
+                ptr = &ActivationData<ActivationType::ReLU>::forward;
+                break;
+            case ActivationType::Softmax:
+                ptr = &ActivationData<ActivationType::Softmax>::forward;
+                break;
+            default:
+                assert(false && "Usupported ActivationType");
+                break;
+        }
+
+        return ptr;
+    }
+
+    static BackwardType* backward(ActivationType type) {
+        BackwardType* ptr;
+        switch (type) {
+            case ActivationType::Sigmoid:
+                ptr = &ActivationData<ActivationType::Sigmoid>::backward;
+                break;
+            case ActivationType::ReLU:
+                ptr = &ActivationData<ActivationType::ReLU>::backward;
+                break;
+            case ActivationType::Softmax:
+                ptr = &ActivationData<ActivationType::Softmax>::backward;
+                break;
+            default:
+                assert(false && "Usupported ActivationType");
+                break;
+        }
+
+        return ptr;
+    }
+};
+
 class LinearLayer {
 public:
     LinearLayer(size_t in_size, size_t out_size);
@@ -23,21 +119,18 @@ public:
     Matrix Backward(const Vector& x, const RowVector& u, /* const */ GradientFunction& gf, double lambda);
 
 private:
-    size_t in_size_;
-    size_t out_size_;
     Matrix A_;
     Vector b_;
 };
 
 class NonLinearLayer {
 public:
-    enum class DefaultFunctions { Sigmoid, ReLU, Softmax, LeakyReLU };
+    using ForwardType = ActivationSelector::ForwardType;
+    using BackwardType = ActivationSelector::BackwardType;
 
-    explicit NonLinearLayer(DefaultFunctions f);
+    explicit NonLinearLayer(ActivationType type);
 
-    template <typename F1, typename F2>
-    NonLinearLayer(F1 forward, F2 backward) : forward_(std::move(forward)), backward_(std::move(backward)) {
-    }
+    NonLinearLayer(ForwardType forward, BackwardType backward);
 
     NonLinearLayer(const NonLinearLayer& oth) = delete;
     NonLinearLayer(NonLinearLayer&& oth) noexcept = default;
@@ -47,30 +140,9 @@ public:
     Vector Forward(const Vector& x) const;
     Matrix Backward(const Vector& x, const RowVector& u, /* const */ GradientFunction& gf, double lambda);
 
-    // maybe make those functions private?
-
-    // 1/(1 + e^(-x))
-    static Vector Sigmoid(const Vector& x);
-    // returns derivative as matrix(1, x.size())
-    static Matrix SigmoidDeriv(const Vector& x);
-
-    // max(0, x)
-    // Works very poorly (at least on mnist)
-    static Vector ReLU(const Vector& x);
-    static Matrix ReLUDeriv(const Vector& x);
-
-    // sum x = 1.0
-    static Vector Softmax(const Vector& x);
-    static Matrix SoftmaxDeriv(const Vector& x);
-
-    // maybe add parametr a : max(ax, x))
-    // Works very poorly (at least on mnist)
-    static Vector LeakyReLU(const Vector& x);
-    static Matrix LeakyReLUDeriv(const Vector& x);
-
 private:
-    std::function<Vector(Vector const&)> forward_;
-    std::function<Matrix(Matrix const&, Matrix const&)> backward_;
+    std::function<ForwardType> forward_;
+    std::function<BackwardType> backward_;
 };
 
 namespace details {
