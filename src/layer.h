@@ -36,7 +36,7 @@ public:
     explicit NonLinearLayer(DefaultFunctions f);
 
     template <typename F1, typename F2>
-    NonLinearLayer(F1 forward, F2 backward) : f_(std::move(forward)), b_(std::move(backward)) {
+    NonLinearLayer(F1 forward, F2 backward) : forward_(std::move(forward)), backward_(std::move(backward)) {
     }
 
     NonLinearLayer(const NonLinearLayer& oth) = delete;
@@ -69,8 +69,8 @@ public:
     static Matrix LeakyReLUDeriv(const Vector& x);
 
 private:
-    std::function<Vector(Vector const&)> f_;
-    std::function<Matrix(Matrix const&, Matrix const&)> b_;
+    std::function<Vector(Vector const&)> forward_;
+    std::function<Matrix(Matrix const&, Matrix const&)> backward_;
 };
 
 namespace details {

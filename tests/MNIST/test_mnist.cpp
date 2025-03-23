@@ -23,7 +23,6 @@ bool is_correct(const NeuralNetwork::Vector& predicted, const NeuralNetwork::Vec
 }
 
 using ActivationFunctions = NeuralNetwork::NonLinearLayer::DefaultFunctions;
-using LossFunctions = NeuralNetwork::LossFunction::Default;
 using GradientFunctions = NeuralNetwork::GradientFunction::Type;
 
 // in /build: cmake .. && make && ./tests/MNIST/test_mnist
@@ -49,7 +48,7 @@ int main() {
     // can not put user-written gradient decent here(
     NeuralNetwork::Network net(
         {784, 200, 80, 10}, {ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid},
-        0.0004, NeuralNetwork::LossFunction(LossFunctions::MSE), {GradientFunctions::Adam, {0.98, 0.98}});
+        0.0004, NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse), {GradientFunctions::Adam, {0.98, 0.98}});
 
     {  // calculate expected epoch time
         size_t sample_size = 100;

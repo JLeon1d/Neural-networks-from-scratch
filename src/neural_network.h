@@ -13,14 +13,16 @@ class Network {
 public:
     static constexpr double kDefaultLearningRate = 0.2;
 
+    /*
+    template <typename F>
     Network(const std::vector<size_t>& layer_sizes, double learning_rate = kDefaultLearningRate,
-            LossFunction lf = LossFunction(LossFunction::Default::MSE),
             GradientFunction::Type gf_type = GradientFunction::Type::Classic);
+    */
 
     // (layer_sizes.size()) should be equal to (activation_functions.size() + 1)
     Network(const std::vector<size_t>& layer_sizes,
             const std::vector<NonLinearLayer::DefaultFunctions>& activation_functions,
-            double learning_rate = kDefaultLearningRate, LossFunction lf = LossFunction(LossFunction::Default::MSE),
+            double learning_rate = kDefaultLearningRate, LossFunction lf = LossFunction(LossType::Mse),
             GradientFunction::Initializer gf_initializer = {GradientFunction::Type::Classic, {}});
 
     ~Network() = default;

@@ -3,8 +3,6 @@
 #include "LinearAlgebra.h"
 #include "gradient.h"
 
-#include <stdexcept>
-
 namespace NeuralNetwork {
 
 LinearLayer::LinearLayer(size_t in_size, size_t out_size)
@@ -30,30 +28,30 @@ Matrix LinearLayer::Backward(const Vector& x, const RowVector& u, /* const */ Gr
 
 NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
     if (f == DefaultFunctions::Sigmoid) {
-        f_ = std::move(Sigmoid);
-        b_ = [](const Vector& x, const RowVector& u) {
+        forward_ = std::move(Sigmoid);
+        backward_ = [](const Vector& x, const RowVector& u) {
             assert(u.size() == x.size());
 
             RowVector next_u = u.cwiseProduct(SigmoidDeriv(x));
             return next_u;
         };
     } else if (f == DefaultFunctions::ReLU) {
-        f_ = std::move(ReLU);
-        b_ = [](const Vector& x, const RowVector& u) {
+        forward_ = std::move(ReLU);
+        backward_ = [](const Vector& x, const RowVector& u) {
             assert(u.size() == x.size());
 
             return RowVector(u * ReLUDeriv(x));
         };
     } else if (f == DefaultFunctions::Softmax) {
-        f_ = std::move(Softmax);
-        b_ = [](const Vector& x, const RowVector& u) {
+        forward_ = std::move(Softmax);
+        backward_ = [](const Vector& x, const RowVector& u) {
             assert(u.size() == x.size());
 
             return RowVector(u * SoftmaxDeriv(x));
         };
     } else if (f == DefaultFunctions::LeakyReLU) {
-        f_ = std::move(LeakyReLU);
-        b_ = [](const Vector& x, const RowVector& u) {
+        forward_ = std::move(LeakyReLU);
+        backward_ = [](const Vector& x, const RowVector& u) {
             assert(u.size() == x.size());
 
             return RowVector(u * LeakyReLUDeriv(x));
@@ -62,13 +60,13 @@ NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
 }
 
 Vector NonLinearLayer::Forward(const Vector& x) const {
-    assert(f_);
-    return f_(x);
+    assert(forward_);
+    return forward_(x);
 }
 
 Matrix NonLinearLayer::Backward(const Vector& x, const RowVector& u, /* const */ GradientFunction&, double) {
-    assert(b_);
-    return b_(x, u);
+    assert(backward_);
+    return backward_(x, u);
 }
 
 Vector NonLinearLayer::Sigmoid(const Vector& x) {
