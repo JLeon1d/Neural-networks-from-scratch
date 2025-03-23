@@ -5,7 +5,7 @@
 #include <vector>
 
 // not to confuse with NeuralNetwork::DataSample
-using DataSample = std::pair<std::vector<double>, std::vector<double>>; 
+using DataSample = std::pair<std::vector<double>, std::vector<double>>;
 
 uint32_t reverse_int(uint32_t i);
 

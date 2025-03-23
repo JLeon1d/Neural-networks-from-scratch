@@ -14,7 +14,7 @@ DataBatch DataLoader::Load() {
     }
 
     size_t features_size = raw_data[0].first.size();
-    size_t lables_size = raw_data[0].second.size(); 
+    size_t lables_size = raw_data[0].second.size();
 
     DataBatch data(raw_data.size());
     for (size_t i = 0; i < data.size(); ++i) {
@@ -22,6 +22,7 @@ DataBatch DataLoader::Load() {
             throw std::logic_error("wrong featires size");
         }
 
+        /// Eigen map
         data[i].features = Eigen::Map<Vector, Eigen::Unaligned>(raw_data[i].first.data(), features_size);
         data[i].target = Eigen::Map<Vector, Eigen::Unaligned>(raw_data[i].second.data(), lables_size);
     }
@@ -29,4 +30,4 @@ DataBatch DataLoader::Load() {
     return data;
 }
 
-}; // namespace NeuralNetwork
+};  // namespace NeuralNetwork

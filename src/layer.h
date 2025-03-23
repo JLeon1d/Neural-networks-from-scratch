@@ -31,18 +31,12 @@ private:
 
 class NonLinearLayer {
 public:
-    enum class DefaultFunctions {
-        Sigmoid,
-        ReLU,
-        Softmax,
-        LeakyReLU
-    };
+    enum class DefaultFunctions { Sigmoid, ReLU, Softmax, LeakyReLU };
 
     explicit NonLinearLayer(DefaultFunctions f);
 
     template <typename F1, typename F2>
-    NonLinearLayer(F1 forward, F2 backward)
-        : f_(std::move(forward)), b_(std::move(backward)) {
+    NonLinearLayer(F1 forward, F2 backward) : f_(std::move(forward)), b_(std::move(backward)) {
     }
 
     NonLinearLayer(const NonLinearLayer& oth) = delete;
@@ -72,7 +66,7 @@ public:
     // maybe add parametr a : max(ax, x))
     // Works very poorly (at least on mnist)
     static Vector LeakyReLU(const Vector& x);
-    static Matrix LeakyReLUDeriv(const Vector& x);  
+    static Matrix LeakyReLUDeriv(const Vector& x);
 
 private:
     std::function<Vector(Vector const&)> f_;
@@ -81,16 +75,17 @@ private:
 
 namespace details {
 
-template<class TBase>
+template <class TBase>
 class ILayer : public TBase {
 public:
     virtual Vector Forward(const Vector& x) const = 0;
     virtual Matrix Backward(const Vector& x, const Matrix& u, /* const */ GradientFunction& gf, double lambda) = 0;
 };
 
-template<class TBase, class TObject>
+template <class TBase, class TObject>
 class CLayerImpl : public TBase {
     using CBase = TBase;
+
 public:
     using CBase::CBase;
 
@@ -103,10 +98,11 @@ public:
     }
 };
 
-}; // namespace details
+};  // namespace details
 
 class Layer : public NSLibrary::CAnyMovable<details::ILayer, details::CLayerImpl> {
     using CBase = NSLibrary::CAnyMovable<details::ILayer, details::CLayerImpl>;
+
 public:
     using CBase::CBase;
 };

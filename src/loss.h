@@ -10,15 +10,12 @@ public:
     using LossFunctionType = double(const Vector&, const Vector&);
     using GradienFunctionType = RowVector(const Vector&, const Vector&);
 
-    enum Default {
-        MSE,
-        CrossEntropy
-    };
+    enum Default { MSE, CrossEntropy };
 
     explicit LossFunction(Default func);
     LossFunction(LossFunctionType loss, GradienFunctionType gradient);
 
-    ~LossFunction() = default; 
+    ~LossFunction() = default;
 
     double Loss(const Vector& predicted, const Vector& target) const;
 
@@ -35,4 +32,4 @@ private:
     std::function<GradienFunctionType> gradient_;
 };
 
-}; // namespace NeuralNetwork
+};  // namespace NeuralNetwork

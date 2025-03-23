@@ -24,8 +24,8 @@ Network::Network(const std::vector<size_t>& layer_sizes, double learning_rate, L
 }
 
 Network::Network(const std::vector<size_t>& layer_sizes,
-                 const std::vector<NonLinearLayer::DefaultFunctions>& activation_functions,
-                 double learning_rate, LossFunction lf, GradientFunction::Initializer gf_initializer)
+                 const std::vector<NonLinearLayer::DefaultFunctions>& activation_functions, double learning_rate,
+                 LossFunction lf, GradientFunction::Initializer gf_initializer)
     : learning_rate_(learning_rate), loss_function_(std::move(lf)) {
     assert(!layer_sizes.empty());
     assert(!activation_functions.empty());
@@ -38,25 +38,26 @@ Network::Network(const std::vector<size_t>& layer_sizes,
             gradient_function_.emplace_back(ClassicGradient());
         } else if (gf_initializer.type == GradientFunction::Type::Momentum) {
             if (gf_initializer.args.size() > 0) {
-                gradient_function_.emplace_back(MomentumGradient(layer_sizes[l_id], layer_sizes[l_id + 1],
-                                                                 *gf_initializer.args.begin()));
+                gradient_function_.emplace_back(
+                    MomentumGradient(layer_sizes[l_id], layer_sizes[l_id + 1], *gf_initializer.args.begin()));
             } else {
                 gradient_function_.emplace_back(MomentumGradient(layer_sizes[l_id], layer_sizes[l_id + 1]));
             }
         } else if (gf_initializer.type == GradientFunction::Type::RMSProp) {
             if (gf_initializer.args.size() > 0) {
-                gradient_function_.emplace_back(RMSPropGradient(layer_sizes[l_id], layer_sizes[l_id + 1],
-                                                                 *gf_initializer.args.begin()));
+                gradient_function_.emplace_back(
+                    RMSPropGradient(layer_sizes[l_id], layer_sizes[l_id + 1], *gf_initializer.args.begin()));
             } else {
                 gradient_function_.emplace_back(RMSPropGradient(layer_sizes[l_id], layer_sizes[l_id + 1]));
             }
         } else if (gf_initializer.type == GradientFunction::Type::Adam) {
             if (gf_initializer.args.size() > 1) {
                 gradient_function_.emplace_back(AdamGradient(layer_sizes[l_id], layer_sizes[l_id + 1],
-                                                                 *gf_initializer.args.begin(), *(gf_initializer.args.begin() + 1)));
+                                                             *gf_initializer.args.begin(),
+                                                             *(gf_initializer.args.begin() + 1)));
             } else if (gf_initializer.args.size() > 0) {
-                gradient_function_.emplace_back(AdamGradient(layer_sizes[l_id], layer_sizes[l_id + 1],
-                                                                 *gf_initializer.args.begin()));
+                gradient_function_.emplace_back(
+                    AdamGradient(layer_sizes[l_id], layer_sizes[l_id + 1], *gf_initializer.args.begin()));
             } else {
                 gradient_function_.emplace_back(AdamGradient(layer_sizes[l_id], layer_sizes[l_id + 1]));
             }
@@ -97,7 +98,7 @@ double Network::CheckLoss(const std::vector<DataSample>& data) const {
         auto predicted = Predict(data[i].features);
         loss_sum += loss_function_.Loss(predicted, data[i].target);
     }
-    
+
     return loss_sum / static_cast<double>(data.size());
 }
 

@@ -35,17 +35,16 @@ double LossFunction::MSELoss(const Vector& predicted, const Vector& target) {
 }
 
 RowVector LossFunction::MSEGradient(const Vector& predicted, const Vector& target) {
-    return ((predicted - target).array() * 2.0/predicted.size()).matrix().transpose();
+    return ((predicted - target).array() * 2.0 / predicted.size()).matrix().transpose();
 }
 
 double LossFunction::CrossEntropyLoss(const Vector& predicted, const Vector& target) {
-    Eigen::ArrayXd p_log = predicted.array().log();
-    p_log *= target.array();
-    return -p_log.sum();
+    auto p_log = predicted.array().log();
+    return -(p_log * target.array()).sum();
 }
 
 RowVector LossFunction::CrossEntropyGradient(const Vector& predicted, const Vector& target) {
     return (predicted - target).transpose();
 }
 
-}; // namespace NeuralNetwork
+};  // namespace NeuralNetwork

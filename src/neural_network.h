@@ -13,23 +13,22 @@ class Network {
 public:
     static constexpr double kDefaultLearningRate = 0.2;
 
-    Network(const std::vector<size_t>& layer_sizes, double learning_rate=kDefaultLearningRate,
-                     LossFunction lf = LossFunction(LossFunction::Default::MSE),
-                     GradientFunction::Type gf_type = GradientFunction::Type::Classic);
+    Network(const std::vector<size_t>& layer_sizes, double learning_rate = kDefaultLearningRate,
+            LossFunction lf = LossFunction(LossFunction::Default::MSE),
+            GradientFunction::Type gf_type = GradientFunction::Type::Classic);
 
     // (layer_sizes.size()) should be equal to (activation_functions.size() + 1)
     Network(const std::vector<size_t>& layer_sizes,
-                     const std::vector<NonLinearLayer::DefaultFunctions>& activation_functions,
-                     double learning_rate = kDefaultLearningRate,
-                     LossFunction lf = LossFunction(LossFunction::Default::MSE),
-                     GradientFunction::Initializer gf_initializer = {GradientFunction::Type::Classic, {}});
+            const std::vector<NonLinearLayer::DefaultFunctions>& activation_functions,
+            double learning_rate = kDefaultLearningRate, LossFunction lf = LossFunction(LossFunction::Default::MSE),
+            GradientFunction::Initializer gf_initializer = {GradientFunction::Type::Classic, {}});
 
     ~Network() = default;
 
     void TrainSingle(const DataSample& data_sample);
 
     Vector Predict(const Vector& features) const;
-    
+
     // can paralel here, is it worth?
     double CheckLoss(const std::vector<DataSample>& data) const;
 
@@ -46,4 +45,4 @@ private:
     double learning_rate_ = 0.2;
 };
 
-}; // namespace NeuralNetwork
+};  // namespace NeuralNetwork

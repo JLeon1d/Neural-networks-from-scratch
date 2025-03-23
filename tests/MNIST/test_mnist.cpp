@@ -48,12 +48,8 @@ int main() {
 
     // can not put user-written gradient decent here(
     NeuralNetwork::Network net(
-        {784, 200, 80, 10},
-        {ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid},
-        0.0004,
-        NeuralNetwork::LossFunction(LossFunctions::MSE),
-        {GradientFunctions::Adam, {0.98, 0.98}}
-    );
+        {784, 200, 80, 10}, {ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid, ActivationFunctions::Sigmoid},
+        0.0004, NeuralNetwork::LossFunction(LossFunctions::MSE), {GradientFunctions::Adam, {0.98, 0.98}});
 
     {  // calculate expected epoch time
         size_t sample_size = 100;
@@ -64,7 +60,8 @@ int main() {
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        double expected_epoch_minutes = (((double)duration.count() * train_data.size())/(double)sample_size) / 1e6 / 60.0;
+        double expected_epoch_minutes =
+            (((double)duration.count() * train_data.size()) / (double)sample_size) / 1e6 / 60.0;
         std::cout << "Expected epoch time (minutes): " << expected_epoch_minutes << std::endl;
     }
 

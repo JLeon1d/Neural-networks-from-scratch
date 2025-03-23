@@ -20,6 +20,7 @@ public:
     ClassicGradient& operator=(ClassicGradient&& oth) = default;
 
     GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
+
 private:
 };
 
@@ -71,7 +72,7 @@ public:
     static constexpr double epsilon = 1e-8;
 
     RMSPropGradient(size_t x_size, size_t u_size, double alpha = kDefaultAlpha);
-    
+
     RMSPropGradient(const RMSPropGradient& oth) = delete;
     RMSPropGradient(RMSPropGradient&& oth) = default;
     RMSPropGradient& operator=(const RMSPropGradient& oth) = delete;
@@ -83,7 +84,7 @@ public:
 private:
     Matrix A_g_;
     Vector b_g_;
-    
+
     double alpha_;
 };
 
@@ -92,9 +93,9 @@ class AdamGradient {
 public:
     static constexpr double kDefaultAlpha = 0.9;
     static constexpr double epsilon = 1e-8;
-    
+
     AdamGradient(size_t x_size, size_t u_size, double alpha_linear = kDefaultAlpha,
-                          double alpha_square = kDefaultAlpha);
+                 double alpha_square = kDefaultAlpha);
 
     AdamGradient(const AdamGradient& oth) = delete;
     AdamGradient(AdamGradient&& oth) = default;
@@ -118,15 +119,16 @@ private:
     double alpha_square_step_;  // alpha_square_ ^ step
 };
 
-template<class TBase>
+template <class TBase>
 class IGradientFunction : public TBase {
 public:
     virtual GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate) = 0;
 };
 
-template<class TBase, class TObject>
+template <class TBase, class TObject>
 class CGradientFunctionImpl : public TBase {
     using CBase = TBase;
+
 public:
     using CBase::CBase;
 
@@ -137,16 +139,11 @@ public:
 
 class GradientFunction : public NSLibrary::CAnyMovable<IGradientFunction, CGradientFunctionImpl> {
     using CBase = NSLibrary::CAnyMovable<IGradientFunction, CGradientFunctionImpl>;
+
 public:
     using CBase::CBase;
 
-    enum Type {
-        Classic,
-        Momentum,
-        AdaGrad,
-        RMSProp,
-        Adam
-    };
+    enum Type { Classic, Momentum, AdaGrad, RMSProp, Adam };
 
     struct Initializer {
         Type type;
@@ -154,4 +151,4 @@ public:
     };
 };
 
-}; // namespace NeuralNetwork
+};  // namespace NeuralNetwork

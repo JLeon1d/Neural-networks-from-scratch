@@ -15,7 +15,8 @@ using DataBatch = std::vector<DataSample>;
 // all features have the same type ?
 class DataLoader {
 public:
-    using LoadFunction = std::vector<std::pair<std::vector<double>, std::vector<double>>>(const std::string&, const std::string&);
+    using LoadFunction = std::vector<std::pair<std::vector<double>, std::vector<double>>>(const std::string&,
+                                                                                          const std::string&);
 
     DataLoader(const std::string& features_path, const std::string& lables_path, LoadFunction f);
 
@@ -28,4 +29,4 @@ private:
     std::function<LoadFunction> f_;
 };
 
-}; // namespace NeuralNetwork
+};  // namespace NeuralNetwork

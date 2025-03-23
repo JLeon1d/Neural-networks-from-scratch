@@ -8,8 +8,7 @@
 namespace NeuralNetwork {
 
 LinearLayer::LinearLayer(size_t in_size, size_t out_size)
-    : in_size_(in_size), out_size_(out_size), A_(Matrix::Random(out_size, in_size)),
-      b_(Vector::Random(out_size)) {
+    : in_size_(in_size), out_size_(out_size), A_(Matrix::Random(out_size, in_size)), b_(Vector::Random(out_size)) {
 }
 
 Vector LinearLayer::Forward(const Vector& x) const {
@@ -64,7 +63,7 @@ NonLinearLayer::NonLinearLayer(DefaultFunctions f) {
 
 Vector NonLinearLayer::Forward(const Vector& x) const {
     assert(f_);
-    return f_(x); 
+    return f_(x);
 }
 
 Matrix NonLinearLayer::Backward(const Vector& x, const RowVector& u, /* const */ GradientFunction&, double) {
@@ -85,7 +84,7 @@ Vector NonLinearLayer::ReLU(const Vector& x) {
 }
 
 Matrix NonLinearLayer::ReLUDeriv(const Vector& x) {
-    return (0.5 + (x.array().sign())/2.0).matrix().asDiagonal();
+    return (0.5 + (x.array().sign()) / 2.0).matrix().asDiagonal();
 }
 
 Vector NonLinearLayer::Softmax(const Vector& x) {
@@ -98,8 +97,8 @@ Vector NonLinearLayer::Softmax(const Vector& x) {
 Matrix NonLinearLayer::SoftmaxDeriv(const Vector& x) {
     Vector s = Softmax(x);
 
-    Matrix d = -s * s.transpose(); // -s_i * s_j
-    d.diagonal() += s;  // -s_i * s_j + (i == j) * s_i
+    Matrix d = -s * s.transpose();  // -s_i * s_j
+    d.diagonal() += s;              // -s_i * s_j + (i == j) * s_i
 
     return d;
 }
@@ -111,7 +110,7 @@ Vector NonLinearLayer::LeakyReLU(const Vector& x) {
 
 // not exactly deriv
 Matrix NonLinearLayer::LeakyReLUDeriv(const Vector& x) {
-    return (0.01 + 0.5 + (x.array().sign())/2.0).matrix().asDiagonal();
+    return (0.01 + 0.5 + (x.array().sign()) / 2.0).matrix().asDiagonal();
 }
 
 };  // namespace NeuralNetwork
