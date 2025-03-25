@@ -17,9 +17,9 @@ Matrix LinearLayer::Backward(const Vector& x, const RowVector& u, /* const */ Gr
     assert(u.rows() == 1 && u.cols() == A_.rows() && "Wrong gradient vector size");
 
     Matrix next_u(u * A_);
-    auto gradients = gf->operator()(x, u, lambda);
-    A_ += gradients.first;
-    b_ += gradients.second;
+    auto gradients = gf->Optimize(x, u, lambda);
+    A_ += gradients.A_grad;
+    b_ += gradients.b_grad;
 
     return next_u;
 }

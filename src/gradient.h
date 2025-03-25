@@ -4,40 +4,65 @@
 #include "AnyMovable.h"
 
 #include <initializer_list>
+#include <variant>
 
 namespace NeuralNetwork {
 
-using GradientPair = std::pair<Matrix, Vector>;
-using FuncType = GradientPair(const Vector&, const Matrix&, double);
+enum class OptimizerType { Classic, Momentum, AdaGrad, RMSProp, Adam };
 
-class ClassicGradient {
-public:
-    ClassicGradient() = default;
-
-    ClassicGradient(const ClassicGradient& oth) = delete;
-    ClassicGradient(ClassicGradient&& oth) = default;
-    ClassicGradient& operator=(const ClassicGradient& oth) = delete;
-    ClassicGradient& operator=(ClassicGradient&& oth) = default;
-
-    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
-
-private:
+struct Gradients {
+    Matrix A_grad;
+    Vector b_grad;
 };
 
-class MomentumGradient {
+namespace Optimizers {
+
+/// Cache here
+
+namespace Caches {
+
+struct Empty {};
+
+struct Momentum {
+    Matrix momentum_A_;
+    Vector momentum_b_;
+};
+
+struct AdaGrad {
+    Matrix A_g_;
+    Vector b_g_;
+};
+
+struct RMSProp {
+    Matrix A_g_;
+    Vector b_g_;
+};
+
+struct Adam {
+    Matrix A_linear_;
+    Matrix A_square_;
+    Vector b_linear_;
+    Vector b_square_;
+};
+
+};  // namespace Caches
+
+using Cache = std::variant<Caches::Empty, Caches::Momentum, Caches::AdaGrad, Caches::RMSProp, Caches::Adam>;
+
+class Classic {
+public:
+    Gradients Optimize(const Vector& x, const RowVector& u, double learning_rate);
+};
+
+class Momentum {
 public:
     static constexpr double kDefaultAlpha = 0.9;
 
-    MomentumGradient(size_t x_size, size_t u_size, double alpha = kDefaultAlpha);
+    Momentum(size_t x_size, size_t u_size, double alpha = kDefaultAlpha);
 
-    MomentumGradient(const MomentumGradient& oth) = delete;
-    MomentumGradient(MomentumGradient&& oth) = default;
-    MomentumGradient& operator=(const MomentumGradient& oth) = delete;
-    MomentumGradient& operator=(MomentumGradient&& oth) = default;
+    ~Momentum() = default;
 
-    ~MomentumGradient() = default;
-
-    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
+    Gradients Optimize(const Vector& x, const RowVector& u, double learning_rate);
 
 private:
     Matrix momentum_A_;
@@ -46,40 +71,31 @@ private:
     double alpha_;
 };
 
-class AdaGradient {
+class AdaGrad {
 public:
     static constexpr double epsilon = 1e-8;
 
-    AdaGradient(size_t x_size, size_t u_size);
+    AdaGrad(size_t x_size, size_t u_size);
 
-    AdaGradient(const AdaGradient& oth) = delete;
-    AdaGradient(AdaGradient&& oth) = default;
-    AdaGradient& operator=(const AdaGradient& oth) = delete;
-    AdaGradient& operator=(AdaGradient&& oth) = default;
+    ~AdaGrad() = default;
 
-    ~AdaGradient() = default;
-
-    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
+    Gradients Optimize(const Vector& x, const RowVector& u, double learning_rate);
 
 private:
     Matrix A_g_;
     Vector b_g_;
 };
 
-class RMSPropGradient {
+class RMSProp {
 public:
     static constexpr double kDefaultAlpha = 0.9;
     static constexpr double epsilon = 1e-8;
 
-    RMSPropGradient(size_t x_size, size_t u_size, double alpha = kDefaultAlpha);
+    RMSProp(size_t x_size, size_t u_size, double alpha = kDefaultAlpha);
 
-    RMSPropGradient(const RMSPropGradient& oth) = delete;
-    RMSPropGradient(RMSPropGradient&& oth) = default;
-    RMSPropGradient& operator=(const RMSPropGradient& oth) = delete;
-    RMSPropGradient& operator=(RMSPropGradient&& oth) = default;
-    ~RMSPropGradient() = default;
+    ~RMSProp() = default;
 
-    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
+    Gradients Optimize(const Vector& x, const RowVector& u, double learning_rate);
 
 private:
     Matrix A_g_;
@@ -89,22 +105,16 @@ private:
 };
 
 // maybe make bias-correction (alpha ^ step) optional ?
-class AdamGradient {
+class Adam {
 public:
     static constexpr double kDefaultAlpha = 0.9;
     static constexpr double epsilon = 1e-8;
 
-    AdamGradient(size_t x_size, size_t u_size, double alpha_linear = kDefaultAlpha,
-                 double alpha_square = kDefaultAlpha);
+    Adam(size_t x_size, size_t u_size, double alpha_linear = kDefaultAlpha, double alpha_square = kDefaultAlpha);
 
-    AdamGradient(const AdamGradient& oth) = delete;
-    AdamGradient(AdamGradient&& oth) = default;
-    AdamGradient& operator=(const AdamGradient& oth) = delete;
-    AdamGradient& operator=(AdamGradient&& oth) = default;
+    ~Adam() = default;
 
-    ~AdamGradient() = default;
-
-    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate);
+    Gradients Optimize(const Vector& x, const RowVector& u, double learning_rate);
 
 private:
     Matrix A_linear_;
@@ -119,10 +129,12 @@ private:
     double alpha_square_step_;  // alpha_square_ ^ step
 };
 
+};  // namespace Optimizers
+
 template <class TBase>
 class IGradientFunction : public TBase {
 public:
-    virtual GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate) = 0;
+    virtual Gradients Optimize(const Vector& x, const RowVector& u, double learning_rate) = 0;
 };
 
 template <class TBase, class TObject>
@@ -132,8 +144,8 @@ class CGradientFunctionImpl : public TBase {
 public:
     using CBase::CBase;
 
-    GradientPair operator()(const Vector& x, const RowVector& u, double learning_rate) override {
-        return CBase::Object()(x, u, learning_rate);
+    Gradients Optimize(const Vector& x, const RowVector& u, double learning_rate) override {
+        return CBase::Object().Optimize(x, u, learning_rate);
     }
 };
 

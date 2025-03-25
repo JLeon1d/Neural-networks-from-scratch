@@ -17,37 +17,37 @@ Network::Network(const std::vector<int64_t>& layer_sizes, const std::vector<Acti
         net_.emplace_back(NeuralNetwork::LinearLayer(In{layer_sizes[l_id]}, Out{layer_sizes[l_id + 1]}));
         net_.emplace_back(NeuralNetwork::NonLinearLayer(activation_functions[l_id]));
         if (gf_initializer.type == GradientFunction::Type::Classic) {
-            gradient_function_.emplace_back(ClassicGradient());
+            gradient_function_.emplace_back(Optimizers::Classic());
         } else if (gf_initializer.type == GradientFunction::Type::Momentum) {
             if (gf_initializer.args.size() > 0) {
                 gradient_function_.emplace_back(
-                    MomentumGradient(layer_sizes[l_id], layer_sizes[l_id + 1], *gf_initializer.args.begin()));
+                    Optimizers::Momentum(layer_sizes[l_id], layer_sizes[l_id + 1], *gf_initializer.args.begin()));
             } else {
-                gradient_function_.emplace_back(MomentumGradient(layer_sizes[l_id], layer_sizes[l_id + 1]));
+                gradient_function_.emplace_back(Optimizers::Momentum(layer_sizes[l_id], layer_sizes[l_id + 1]));
             }
         } else if (gf_initializer.type == GradientFunction::Type::RMSProp) {
             if (gf_initializer.args.size() > 0) {
                 gradient_function_.emplace_back(
-                    RMSPropGradient(layer_sizes[l_id], layer_sizes[l_id + 1], *gf_initializer.args.begin()));
+                    Optimizers::RMSProp(layer_sizes[l_id], layer_sizes[l_id + 1], *gf_initializer.args.begin()));
             } else {
-                gradient_function_.emplace_back(RMSPropGradient(layer_sizes[l_id], layer_sizes[l_id + 1]));
+                gradient_function_.emplace_back(Optimizers::RMSProp(layer_sizes[l_id], layer_sizes[l_id + 1]));
             }
         } else if (gf_initializer.type == GradientFunction::Type::Adam) {
             if (gf_initializer.args.size() > 1) {
-                gradient_function_.emplace_back(AdamGradient(layer_sizes[l_id], layer_sizes[l_id + 1],
-                                                             *gf_initializer.args.begin(),
-                                                             *(gf_initializer.args.begin() + 1)));
+                gradient_function_.emplace_back(Optimizers::Adam(layer_sizes[l_id], layer_sizes[l_id + 1],
+                                                                 *gf_initializer.args.begin(),
+                                                                 *(gf_initializer.args.begin() + 1)));
             } else if (gf_initializer.args.size() > 0) {
                 gradient_function_.emplace_back(
-                    AdamGradient(layer_sizes[l_id], layer_sizes[l_id + 1], *gf_initializer.args.begin()));
+                    Optimizers::Adam(layer_sizes[l_id], layer_sizes[l_id + 1], *gf_initializer.args.begin()));
             } else {
-                gradient_function_.emplace_back(AdamGradient(layer_sizes[l_id], layer_sizes[l_id + 1]));
+                gradient_function_.emplace_back(Optimizers::Adam(layer_sizes[l_id], layer_sizes[l_id + 1]));
             }
         }
 
         // no weight updates for NonLinearLayer
         // kinda костыль
-        gradient_function_.emplace_back(ClassicGradient());
+        gradient_function_.emplace_back(Optimizers::Classic());
     }
 }
 

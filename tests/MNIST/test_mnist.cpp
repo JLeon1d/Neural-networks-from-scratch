@@ -1,6 +1,5 @@
 #include "LinearAlgebra.h"
 #include "gradient.h"
-#include "layer.h"
 #include "loss.h"
 #include "neural_network.h"
 #include "data_loader.h"
