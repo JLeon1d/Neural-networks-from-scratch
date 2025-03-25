@@ -20,7 +20,12 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
 # file(GLOB SOURCES "src/*.cpp")
 
-add_library(neural-net "src/data_loader.cpp" "src/layer.cpp" "src/loss.cpp" "src/neural_network.cpp" "src/gradient.cpp")
+add_library(neural-net "src/data_loader.cpp"
+                       "src/linear_layer.cpp"
+                       "src/non_linear_layer.cpp"
+                       "src/loss.cpp"
+                       "src/neural_network.cpp"
+                       "src/gradient.cpp")
 # add_library(neural-net INTERFACE) # for actual testing
 
 # без этого не работает(

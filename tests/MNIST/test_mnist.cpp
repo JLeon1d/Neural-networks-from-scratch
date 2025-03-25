@@ -48,7 +48,7 @@ int main() {
     // can not put user-written gradient decent here(
     // why ActivationTypes but LossFunction(not LossType) - can not use custom activation functions
     NeuralNetwork::Network net(
-        {784, 200, 80, 10}, {ActivationType::Sigmoid, ActivationType::Sigmoid, ActivationType::Sigmoid}, 0.002,
+        {784, 200, 80, 10}, {ActivationType::Sigmoid, ActivationType::Sigmoid, ActivationType::Softmax}, 0.002,
         NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse), {GradientFunctions::Adam, {0.98, 0.98}});
 
     {  // calculate expected epoch time

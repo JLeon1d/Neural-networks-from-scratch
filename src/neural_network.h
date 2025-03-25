@@ -3,6 +3,7 @@
 #include "LinearAlgebra.h"
 #include "data_loader.h"
 #include "layer.h"
+#include "non_linear_layer.h"
 #include "loss.h"
 #include "gradient.h"
 
@@ -13,14 +14,8 @@ class Network {
 public:
     static constexpr double kDefaultLearningRate = 0.2;
 
-    /*
-    template <typename F>
-    Network(const std::vector<size_t>& layer_sizes, double learning_rate = kDefaultLearningRate,
-            GradientFunction::Type gf_type = GradientFunction::Type::Classic);
-    */
-
     // (layer_sizes.size()) should be equal to (activation_functions.size() + 1)
-    Network(const std::vector<size_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
+    Network(const std::vector<int64_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
             double learning_rate = kDefaultLearningRate, LossFunction lf = LossFunction(LossType::Mse),
             GradientFunction::Initializer gf_initializer = {GradientFunction::Type::Classic, {}});
 

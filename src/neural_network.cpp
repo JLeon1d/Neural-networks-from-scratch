@@ -1,31 +1,12 @@
 #include "neural_network.h"
+#include "linear_layer.h"
 #include "data_loader.h"
 #include "gradient.h"
 #include "loss.h"
-#include <stdexcept>
 
 namespace NeuralNetwork {
 
-/*
-Network::Network(const std::vector<size_t>& layer_sizes, double learning_rate, LossFunction lf,
-                 GradientFunction::Type gf_type)
-    : learning_rate_(learning_rate), loss_function_(std::move(lf)) {
-    assert(!layer_sizes.empty());
-
-    for (size_t l_id = 0; l_id < layer_sizes.size() - 1; ++l_id) {
-        net_.emplace_back(NeuralNetwork::LinearLayer(layer_sizes[l_id], layer_sizes[l_id + 1]));
-        net_.emplace_back(NeuralNetwork::NonLinearLayer(NeuralNetwork::NonLinearLayer::DefaultFunctions::Sigmoid));
-        if (gf_type == GradientFunction::Type::Classic) {
-            gradient_function_.emplace_back(std::move(ClassicGradient()));
-        } else if (gf_type == GradientFunction::Type::Momentum) {
-            MomentumGradient mg(layer_sizes[l_id], layer_sizes[l_id + 1]);
-            gradient_function_.emplace_back(std::move(mg));
-        }
-    }
-}
-*/
-
-Network::Network(const std::vector<size_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
+Network::Network(const std::vector<int64_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
                  double learning_rate, LossFunction lf, GradientFunction::Initializer gf_initializer)
     : learning_rate_(learning_rate), loss_function_(std::move(lf)) {
     assert(!layer_sizes.empty());
@@ -33,7 +14,7 @@ Network::Network(const std::vector<size_t>& layer_sizes, const std::vector<Activ
     assert(layer_sizes.size() == activation_functions.size() + 1);
 
     for (size_t l_id = 0; l_id < layer_sizes.size() - 1; ++l_id) {
-        net_.emplace_back(NeuralNetwork::LinearLayer(layer_sizes[l_id], layer_sizes[l_id + 1]));
+        net_.emplace_back(NeuralNetwork::LinearLayer(In{layer_sizes[l_id]}, Out{layer_sizes[l_id + 1]}));
         net_.emplace_back(NeuralNetwork::NonLinearLayer(activation_functions[l_id]));
         if (gf_initializer.type == GradientFunction::Type::Classic) {
             gradient_function_.emplace_back(ClassicGradient());
