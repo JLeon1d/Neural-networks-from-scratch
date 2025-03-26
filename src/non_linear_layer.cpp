@@ -15,7 +15,7 @@ Vector NonLinearLayer::Forward(const Vector& x) const {
     return forward_(x);
 }
 
-Matrix NonLinearLayer::Backward(const Vector& x, const RowVector& u, /* const */ GradientFunction&, double) {
+Matrix NonLinearLayer::Backward(const Vector& x, const RowVector& u, const Optimizer&, Optimizers::Cache&, double) {
     assert(backward_);
     return backward_(x, u);
 }

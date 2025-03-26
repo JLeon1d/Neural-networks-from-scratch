@@ -1,4 +1,5 @@
 #include "neural_network.h"
+#include "LinearAlgebra.h"
 #include "linear_layer.h"
 #include "data_loader.h"
 #include "gradient.h"
@@ -7,47 +8,18 @@
 namespace NeuralNetwork {
 
 Network::Network(const std::vector<int64_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
-                 double learning_rate, LossFunction lf, GradientFunction::Initializer gf_initializer)
-    : learning_rate_(learning_rate), loss_function_(std::move(lf)) {
+                 double learning_rate, LossFunction lf, Optimizer&& gf)
+    : learning_rate_(learning_rate), loss_function_(std::move(lf)), gradient_function_(std::move(gf)) {
     assert(!layer_sizes.empty());
     assert(!activation_functions.empty());
     assert(layer_sizes.size() == activation_functions.size() + 1);
 
     for (size_t l_id = 0; l_id < layer_sizes.size() - 1; ++l_id) {
         net_.emplace_back(NeuralNetwork::LinearLayer(In{layer_sizes[l_id]}, Out{layer_sizes[l_id + 1]}));
-        net_.emplace_back(NeuralNetwork::NonLinearLayer(activation_functions[l_id]));
-        if (gf_initializer.type == GradientFunction::Type::Classic) {
-            gradient_function_.emplace_back(Optimizers::Classic());
-        } else if (gf_initializer.type == GradientFunction::Type::Momentum) {
-            if (gf_initializer.args.size() > 0) {
-                gradient_function_.emplace_back(
-                    Optimizers::Momentum(layer_sizes[l_id], layer_sizes[l_id + 1], *gf_initializer.args.begin()));
-            } else {
-                gradient_function_.emplace_back(Optimizers::Momentum(layer_sizes[l_id], layer_sizes[l_id + 1]));
-            }
-        } else if (gf_initializer.type == GradientFunction::Type::RMSProp) {
-            if (gf_initializer.args.size() > 0) {
-                gradient_function_.emplace_back(
-                    Optimizers::RMSProp(layer_sizes[l_id], layer_sizes[l_id + 1], *gf_initializer.args.begin()));
-            } else {
-                gradient_function_.emplace_back(Optimizers::RMSProp(layer_sizes[l_id], layer_sizes[l_id + 1]));
-            }
-        } else if (gf_initializer.type == GradientFunction::Type::Adam) {
-            if (gf_initializer.args.size() > 1) {
-                gradient_function_.emplace_back(Optimizers::Adam(layer_sizes[l_id], layer_sizes[l_id + 1],
-                                                                 *gf_initializer.args.begin(),
-                                                                 *(gf_initializer.args.begin() + 1)));
-            } else if (gf_initializer.args.size() > 0) {
-                gradient_function_.emplace_back(
-                    Optimizers::Adam(layer_sizes[l_id], layer_sizes[l_id + 1], *gf_initializer.args.begin()));
-            } else {
-                gradient_function_.emplace_back(Optimizers::Adam(layer_sizes[l_id], layer_sizes[l_id + 1]));
-            }
-        }
+        optimizer_caches_.emplace_back(gradient_function_->ConstructCache(layer_sizes[l_id], layer_sizes[l_id + 1]));
 
-        // no weight updates for NonLinearLayer
-        // kinda костыль
-        gradient_function_.emplace_back(Optimizers::Classic());
+        net_.emplace_back(NeuralNetwork::NonLinearLayer(activation_functions[l_id]));
+        optimizer_caches_.emplace_back(Optimizers::Caches::Empty(0, 0));
     }
 }
 
@@ -61,7 +33,7 @@ void Network::TrainSingle(const DataSample& data_sample) {
 
     auto u = loss_function_.Gradient(xs[net_.size()], data_sample.target);
     for (int i = net_.size() - 1; i >= 0; --i) {
-        u = net_[i]->Backward(xs[i], u, gradient_function_[i], learning_rate_);
+        u = net_[i]->Backward(xs[i], u, gradient_function_, optimizer_caches_[i], learning_rate_);
     }
 }
 

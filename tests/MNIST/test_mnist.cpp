@@ -22,7 +22,6 @@ bool is_correct(const NeuralNetwork::Vector& predicted, const NeuralNetwork::Vec
 }
 
 using ActivationType = NeuralNetwork::ActivationType;
-using GradientFunctions = NeuralNetwork::GradientFunction::Type;
 
 // in /build: cmake .. && make && ./tests/MNIST/test_mnist
 int main() {
@@ -46,9 +45,11 @@ int main() {
 
     // can not put user-written gradient decent here(
     // why ActivationTypes but LossFunction(not LossType) - can not use custom activation functions
-    NeuralNetwork::Network net(
-        {784, 200, 80, 10}, {ActivationType::Sigmoid, ActivationType::Sigmoid, ActivationType::Softmax}, 0.002,
-        NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse), {GradientFunctions::Adam, {0.98, 0.98}});
+    NeuralNetwork::Optimizer grad = std::move(NeuralNetwork::Optimizers::Adam(1, 2, 0.98, 0.98));
+
+    NeuralNetwork::Network net({784, 200, 80, 10},
+                               {ActivationType::Sigmoid, ActivationType::Sigmoid, ActivationType::Softmax}, 0.002,
+                               NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse), std::move(grad));
 
     {  // calculate expected epoch time
         size_t sample_size = 100;
@@ -64,7 +65,7 @@ int main() {
         std::cout << "Expected epoch time (minutes): " << expected_epoch_minutes << std::endl;
     }
 
-    size_t progress_p = 10000;
+    size_t progress_p = 1000;
     size_t batch_size = 100;
     for (size_t epoch_id = 0; epoch_id < 30; ++epoch_id) {
         for (size_t i = 0; i < train_data.size(); ++i) {

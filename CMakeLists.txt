@@ -8,6 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+# add_compile_options(-fsanitize=address)
+# add_link_options(-fsanitize=address)
+
 # For code visibility in VSCode
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

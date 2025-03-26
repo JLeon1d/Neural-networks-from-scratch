@@ -15,7 +15,7 @@ public:
     ~LinearLayer() = default;
 
     Vector Forward(const Vector& x) const;
-    Matrix Backward(const Vector& x, const RowVector& u, /* const */ GradientFunction& gf, double lambda);
+    Matrix Backward(const Vector& x, const RowVector& u, const Optimizer& gf, Optimizers::Cache& cache, double lambda);
 
 private:
     Matrix A_;

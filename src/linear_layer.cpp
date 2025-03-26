@@ -1,4 +1,5 @@
 #include "linear_layer.h"
+#include "gradient.h"
 
 namespace NeuralNetwork {
 
@@ -13,11 +14,12 @@ Vector LinearLayer::Forward(const Vector& x) const {
     return A_ * x + b_;
 }
 
-Matrix LinearLayer::Backward(const Vector& x, const RowVector& u, /* const */ GradientFunction& gf, double lambda) {
+Matrix LinearLayer::Backward(const Vector& x, const RowVector& u, const Optimizer& gf, Optimizers::Cache& cache,
+                             double lambda) {
     assert(u.rows() == 1 && u.cols() == A_.rows() && "Wrong gradient vector size");
 
     Matrix next_u(u * A_);
-    auto gradients = gf->Optimize(x, u, lambda);
+    auto gradients = gf->Optimize(cache, x, u, lambda);
     A_ += gradients.A_grad;
     b_ += gradients.b_grad;
 

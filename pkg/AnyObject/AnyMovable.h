@@ -249,6 +249,140 @@ private:
   CStoredPtr pIObject_;
 };
 
+template<template<class> class TInterface,
+         template<class, class> class TImplementation>
+class CAny {
+  class IObjectStored;
+  using CStoredPtr = std::unique_ptr<IObjectStored>;
+  template<class T>
+  using CObjType = std::remove_reference_t<T>;
+
+public:
+  CAny() = default;
+
+  template<class T>
+  CAny(T&& Object)
+      : pIObject_(std::make_unique<CObjectStored<CObjType<T>>>(
+            std::forward<T>(Object))) {
+  }
+
+  template<class T>
+  CAny(const T& Object)
+      : pIObject_(std::make_unique<CObjectStored<CObjType<T>>>(
+            Object)) {
+  }
+
+  template<class T, class... TArgs>
+  CAny(std::in_place_type_t<T>, TArgs&&... args)
+      : pIObject_(
+            std::make_unique<CObjectStored<T>>(std::forward<TArgs>(args)...)) {
+  }
+
+  CAny(const CAny& Other) = default; //
+
+  CAny(CAny&& Other) noexcept = default;
+
+  CAny& operator=(const CAny& Other) = default; //
+
+  CAny& operator=(CAny&& Other) noexcept = default;
+
+  bool isDefined() const {
+    return pIObject_.operator bool();
+  }
+
+  // I need this to avoid explicit declaration of a virtual distructor
+  // on the user side
+  class IEmpty {
+  protected:
+    virtual ~IEmpty() = default;
+  };
+
+  TInterface<IEmpty>* operator->() {
+    return pIObject_.get();
+  }
+
+  const TInterface<IEmpty>* operator->() const {
+    return pIObject_.get();
+  }
+
+  template<class TObject, class... TArgs>
+  void emplace(TArgs&&... args) {
+    pIObject_ =
+        std::make_unique<CObjectStored<TObject>>(std::forward<TArgs>(args)...);
+  }
+
+  void clear() {
+    pIObject_.reset();
+  }
+
+protected:
+  ~CAny() = default;
+
+private:
+  class IObjectStored : public TInterface<IEmpty> {
+  public:
+    inline ~IObjectStored() override = default;
+
+  protected:
+    friend class CAnyMoveable;
+  };
+
+  template<class TObject>
+  class CObjectKeeper : public IObjectStored {
+  public:
+    using CObjectType = TObject;
+
+    CObjectKeeper(TObject&& Object) noexcept : Object_(std::move(Object)) {
+    }
+
+    CObjectKeeper(const TObject& Object) : Object_(Object) {
+    }
+
+    ~CObjectKeeper() override = default;
+
+    template<class... TArgs>
+    CObjectKeeper(TArgs&&... args) : Object_(std::forward<TArgs>(args)...) {
+    }
+
+  protected:
+    TObject& Object() {
+      return Object_;
+    }
+
+    const TObject& Object() const {
+      return Object_;
+    }
+
+  private:
+    TObject Object_;
+  };
+
+  // no Specialization for arrays
+
+  template<class TObject>
+  class CObjectStored
+      : public TImplementation<CObjectKeeper<TObject>, TObject> {
+    using CBase = TImplementation<CObjectKeeper<TObject>, TObject>;
+
+  public:
+    using CBase::CBase;
+
+    inline ~CObjectStored() override = default;
+  };
+
+protected:
+  CStoredPtr& StoredPtr() {
+    return pIObject_;
+  }
+
+  const CStoredPtr& StoredPtr() const {
+    return pIObject_;
+  }
+
+private:
+  CStoredPtr pIObject_;
+};
+
 } // namespace NSLibrary
 
 #endif // ANYMOVABLE_H

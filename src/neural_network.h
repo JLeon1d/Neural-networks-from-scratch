@@ -17,7 +17,7 @@ public:
     // (layer_sizes.size()) should be equal to (activation_functions.size() + 1)
     Network(const std::vector<int64_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
             double learning_rate = kDefaultLearningRate, LossFunction lf = LossFunction(LossType::Mse),
-            GradientFunction::Initializer gf_initializer = {GradientFunction::Type::Classic, {}});
+            Optimizer&& gf = std::move(Optimizers::Classic()));
 
     ~Network() = default;
 
@@ -36,7 +36,8 @@ public:
 private:
     std::vector<Layer> net_;
     LossFunction loss_function_;
-    std::vector<GradientFunction> gradient_function_;
+    Optimizer gradient_function_;
+    std::vector<Optimizers::Cache> optimizer_caches_;
 
     double learning_rate_ = 0.2;
 };
