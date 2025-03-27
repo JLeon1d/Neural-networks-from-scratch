@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include "LinearAlgebra.h"
-#include "gradient.h"
+#include "optimizer.h"
 
 namespace NeuralNetwork {
 

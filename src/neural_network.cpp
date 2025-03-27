@@ -1,9 +1,5 @@
 #include "neural_network.h"
-#include "LinearAlgebra.h"
 #include "linear_layer.h"
-#include "data_loader.h"
-#include "gradient.h"
-#include "loss.h"
 
 namespace NeuralNetwork {
 
@@ -15,11 +11,12 @@ Network::Network(const std::vector<int64_t>& layer_sizes, const std::vector<Acti
     assert(layer_sizes.size() == activation_functions.size() + 1);
 
     for (size_t l_id = 0; l_id < layer_sizes.size() - 1; ++l_id) {
-        net_.emplace_back(NeuralNetwork::LinearLayer(In{layer_sizes[l_id]}, Out{layer_sizes[l_id + 1]}));
-        optimizer_caches_.emplace_back(gradient_function_->ConstructCache(layer_sizes[l_id], layer_sizes[l_id + 1]));
+        net_.emplace_back(LinearLayer(In{layer_sizes[l_id]}, Out{layer_sizes[l_id + 1]}));
+        optimizer_caches_.emplace_back(
+            gradient_function_->ConstructRequiredCache(layer_sizes[l_id], layer_sizes[l_id + 1]));
 
-        net_.emplace_back(NeuralNetwork::NonLinearLayer(activation_functions[l_id]));
-        optimizer_caches_.emplace_back(Optimizers::Caches::Empty(0, 0));
+        net_.emplace_back(NonLinearLayer(activation_functions[l_id]));
+        optimizer_caches_.emplace_back(Optimizers::Caches::Empty());
     }
 }
 

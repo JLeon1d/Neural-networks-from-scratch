@@ -1,5 +1,5 @@
 #include "LinearAlgebra.h"
-#include "gradient.h"
+#include "optimizer.h"
 #include "loss.h"
 #include "neural_network.h"
 #include "data_loader.h"
@@ -43,13 +43,11 @@ int main() {
     std::cout << "Loaded " << train_data.size() << " train data samples" << std::endl;
     std::cout << "Loaded " << test_data.size() << " test data samples" << std::endl;
 
-    // can not put user-written gradient decent here(
-    // why ActivationTypes but LossFunction(not LossType) - can not use custom activation functions
-    NeuralNetwork::Optimizer grad = std::move(NeuralNetwork::Optimizers::Adam(1, 2, 0.98, 0.98));
+    NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::Adam(0.98, 0.98));
 
     NeuralNetwork::Network net({784, 200, 80, 10},
                                {ActivationType::Sigmoid, ActivationType::Sigmoid, ActivationType::Softmax}, 0.002,
-                               NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse), std::move(grad));
+                               NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse), std::move(optimizer));
 
     {  // calculate expected epoch time
         size_t sample_size = 100;

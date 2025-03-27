@@ -10,6 +10,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 # add_compile_options(-fsanitize=address)
 # add_link_options(-fsanitize=address)
+# add_compile_options(-fsanitize=undefined)
+# add_link_options(-fsanitize=undefined)
 
 # For code visibility in VSCode
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -28,11 +30,10 @@ add_library(neural-net "src/data_loader.cpp"
                        "src/non_linear_layer.cpp"
                        "src/loss.cpp"
                        "src/neural_network.cpp"
-                       "src/gradient.cpp")
+                       "src/optimizer.cpp")
 # add_library(neural-net INTERFACE) # for actual testing
 
 # без этого не работает(
-# include_directories(pkg)
 target_link_libraries(neural-net Eigen3::Eigen)
 target_link_libraries(neural-net AnyMovable)
 

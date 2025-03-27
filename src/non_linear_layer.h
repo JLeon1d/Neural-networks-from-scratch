@@ -1,7 +1,7 @@
 #pragma once
 
 #include "LinearAlgebra.h"
-#include "gradient.h"
+#include "optimizer.h"
 
 #include <functional>
 

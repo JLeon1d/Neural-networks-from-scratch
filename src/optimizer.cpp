@@ -1,4 +1,4 @@
-#include "gradient.h"
+#include "optimizer.h"
 
 namespace NeuralNetwork {
 
@@ -9,14 +9,7 @@ namespace Caches {
 Empty::Empty(size_t x_size, size_t u_size) {
 }
 
-Momentum::Momentum(size_t x_size, size_t u_size)
-    : momentum_A_(Matrix::Zero(u_size, x_size)), momentum_b_(Vector::Zero(u_size)) {
-}
-
-AdaGrad::AdaGrad(size_t x_size, size_t u_size) : A_g_(Matrix::Zero(u_size, x_size)), b_g_(Vector::Zero(u_size)) {
-}
-
-RMSProp::RMSProp(size_t x_size, size_t u_size) : A_g_(Matrix::Zero(u_size, x_size)), b_g_(Vector::Zero(u_size)) {
+SimpleState::SimpleState(size_t x_size, size_t u_size) : A(Matrix::Zero(u_size, x_size)), b(Vector::Zero(u_size)) {
 }
 
 Adam::Adam(size_t x_size, size_t u_size)
@@ -34,60 +27,56 @@ Gradients Classic::Optimize(Cache&, const Vector& x, const RowVector& u, double 
     return {-learning_rate * u.transpose() * x.transpose(), -learning_rate * u.transpose()};
 }
 
-Momentum::Momentum(size_t x_size, size_t u_size, double alpha) : alpha_(alpha) {
+Momentum::Momentum(double alpha) : alpha_(alpha) {
 }
 
 Gradients Momentum::Optimize(Cache& cache, const Vector& x, const RowVector& u, double learning_rate) const {
-    assert(std::holds_alternative<Caches::Momentum>(cache) && "Wrong type of cache");
-    auto m_cache = std::get<Caches::Momentum>(cache);
+    assert(std::holds_alternative<RequiredCacheType>(cache) && "Wrong type of cache");
+    auto m_cache = std::get<RequiredCacheType>(cache);
 
-    m_cache.momentum_A_ = alpha_ * m_cache.momentum_A_ + learning_rate * u.transpose() * x.transpose();
-    m_cache.momentum_b_ = alpha_ * m_cache.momentum_b_ + learning_rate * u.transpose();
+    m_cache.A = alpha_ * m_cache.A + learning_rate * u.transpose() * x.transpose();
+    m_cache.b = alpha_ * m_cache.b + learning_rate * u.transpose();
 
-    return {-m_cache.momentum_A_, -m_cache.momentum_b_};
-}
-
-AdaGrad::AdaGrad(size_t x_size, size_t u_size) {
+    return {-m_cache.A, -m_cache.b};
 }
 
 Gradients AdaGrad::Optimize(Cache& cache, const Vector& x, const RowVector& u, double learning_rate) const {
-    assert(std::holds_alternative<Caches::AdaGrad>(cache) && "Wrong type of cache");
-    auto a_cache = std::get<Caches::AdaGrad>(cache);
+    assert(std::holds_alternative<RequiredCacheType>(cache) && "Wrong type of cache");
+    auto a_cache = std::get<RequiredCacheType>(cache);
 
     Matrix A_grad(u.transpose() * x.transpose());
     Vector b_grad(u.transpose());
 
-    a_cache.A_g_ += A_grad.cwiseProduct(A_grad);
-    a_cache.b_g_ += b_grad.cwiseProduct(b_grad);
+    a_cache.A += A_grad.cwiseProduct(A_grad);
+    a_cache.b += b_grad.cwiseProduct(b_grad);
 
-    return {-learning_rate * A_grad.cwiseProduct((a_cache.A_g_.array() + epsilon).sqrt().inverse().matrix()),
-            -learning_rate * b_grad.cwiseProduct((a_cache.b_g_.array() + epsilon).sqrt().inverse().matrix())};
+    return {-learning_rate * A_grad.cwiseProduct((a_cache.A.array() + epsilon).sqrt().inverse().matrix()),
+            -learning_rate * b_grad.cwiseProduct((a_cache.b.array() + epsilon).sqrt().inverse().matrix())};
 }
 
-RMSProp::RMSProp(size_t x_size, size_t u_size, double alpha) : alpha_(alpha) {
+RMSProp::RMSProp(double alpha) : alpha_(alpha) {
 }
 
 Gradients RMSProp::Optimize(Cache& cache, const Vector& x, const RowVector& u, double learning_rate) const {
-    assert(std::holds_alternative<Caches::RMSProp>(cache) && "Wrong type of cache");
-    auto r_cache = std::get<Caches::RMSProp>(cache);
+    assert(std::holds_alternative<RequiredCacheType>(cache) && "Wrong type of cache");
+    auto r_cache = std::get<RequiredCacheType>(cache);
 
     Matrix A_grad(u.transpose() * x.transpose());
     Vector b_grad(u.transpose());
 
-    r_cache.A_g_ = alpha_ * r_cache.A_g_ + (1.0 - alpha_) * A_grad.cwiseProduct(A_grad);
-    r_cache.b_g_ = alpha_ * r_cache.b_g_ + (1.0 - alpha_) * b_grad.cwiseProduct(b_grad);
+    r_cache.A = alpha_ * r_cache.A + (1.0 - alpha_) * A_grad.cwiseProduct(A_grad);
+    r_cache.b = alpha_ * r_cache.b + (1.0 - alpha_) * b_grad.cwiseProduct(b_grad);
 
-    return {-learning_rate * A_grad.cwiseProduct((r_cache.A_g_.array() + epsilon).sqrt().inverse().matrix()),
-            -learning_rate * b_grad.cwiseProduct((r_cache.b_g_.array() + epsilon).sqrt().inverse().matrix())};
+    return {-learning_rate * A_grad.cwiseProduct((r_cache.A.array() + epsilon).sqrt().inverse().matrix()),
+            -learning_rate * b_grad.cwiseProduct((r_cache.b.array() + epsilon).sqrt().inverse().matrix())};
 }
 
-Adam::Adam(size_t x_size, size_t u_size, double alpha_linear, double alpha_square)
-    : alpha_linear_(alpha_linear), alpha_square_(alpha_square) {
+Adam::Adam(double alpha_linear, double alpha_square) : alpha_linear_(alpha_linear), alpha_square_(alpha_square) {
 }
 
 Gradients Adam::Optimize(Cache& cache, const Vector& x, const RowVector& u, double learning_rate) const {
-    assert(std::holds_alternative<Caches::Adam>(cache) && "Wrong type of cache");
-    auto a_cache = std::get<Caches::Adam>(cache);
+    assert(std::holds_alternative<RequiredCacheType>(cache) && "Wrong type of cache");
+    auto a_cache = std::get<RequiredCacheType>(cache);
 
     Matrix A_grad(u.transpose() * x.transpose());
     Vector b_grad(u.transpose());

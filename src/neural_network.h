@@ -5,7 +5,7 @@
 #include "layer.h"
 #include "non_linear_layer.h"
 #include "loss.h"
-#include "gradient.h"
+#include "optimizer.h"
 
 namespace NeuralNetwork {
 

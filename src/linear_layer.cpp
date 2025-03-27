@@ -1,5 +1,4 @@
 #include "linear_layer.h"
-#include "gradient.h"
 
 namespace NeuralNetwork {
 
