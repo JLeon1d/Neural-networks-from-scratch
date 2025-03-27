@@ -1,3 +1,6 @@
 [submodule "pkg/Eigen"]
 	path = pkg/Eigen
 	url = https://gitlab.com/libeigen/eigen.git
+[submodule "pkg/Catch2"]
+	path = pkg/Catch2
+	url = https://github.com/catchorg/Catch2.git

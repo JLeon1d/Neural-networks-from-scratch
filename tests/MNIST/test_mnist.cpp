@@ -1,7 +1,7 @@
 #include "LinearAlgebra.h"
+#include "neural_network.h"
 #include "optimizer.h"
 #include "loss.h"
-#include "neural_network.h"
 #include "data_loader.h"
 #include "mnist_data_loader.h"
 

@@ -1,5 +1,4 @@
 #include "loss.h"
-#include "LinearAlgebra.h"
 
 namespace NeuralNetwork {
 

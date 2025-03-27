@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LinearAlgebra.h"
+
 #include <functional>
 
 namespace NeuralNetwork {

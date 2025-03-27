@@ -1,8 +1,9 @@
 #pragma once
 
-#include <cstdint>
 #include "LinearAlgebra.h"
 #include "optimizer.h"
+
+#include <cstdint>
 
 namespace NeuralNetwork {
 

@@ -249,6 +249,7 @@ private:
   CStoredPtr pIObject_;
 };
 
+/* TODO
 template<template<class> class TInterface,
          template<class, class> class TImplementation>
 class CAny {
@@ -382,6 +383,7 @@ protected:
 private:
   CStoredPtr pIObject_;
 };
+*/
 
 } // namespace NSLibrary
 

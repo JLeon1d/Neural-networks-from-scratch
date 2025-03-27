@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LinearAlgebra.h"
+
 #include <utility>
 
 namespace NeuralNetwork {
@@ -12,7 +13,6 @@ struct DataSample {
 
 using DataBatch = std::vector<DataSample>;
 
-// all features have the same type ?
 class DataLoader {
 public:
     using LoadFunction = std::vector<std::pair<std::vector<double>, std::vector<double>>>(const std::string&,
