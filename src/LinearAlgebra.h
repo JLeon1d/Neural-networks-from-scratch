@@ -10,5 +10,6 @@ using Index = Eigen::Index;
 using RowVector = Eigen::RowVectorXd;
 
 using ConvertToVector = Eigen::Map<Vector, Eigen::Unaligned>;
+using ConvertToRowVector = Eigen::Map<RowVector, Eigen::Unaligned>;
 
 };  // namespace NeuralNetwork

@@ -37,16 +37,17 @@ int main() {
     auto train_data = train_data_loader.Load();
     auto test_data = test_data_loader.Load();
 
-    train_data.resize(6000);
-    test_data.resize(2000);
+    train_data.resize(20000);
+    test_data.resize(4000);
 
     std::cout << "Loaded " << train_data.size() << " train data samples" << std::endl;
     std::cout << "Loaded " << test_data.size() << " test data samples" << std::endl;
 
-    NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::Adam(0.98, 0.98));
+    // NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::Adam(0.98, 0.98));
+    NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::Classic());
+    // NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::RMSProp(0.98));
 
-    NeuralNetwork::Network net({784, 200, 80, 10},
-                               {ActivationType::Sigmoid, ActivationType::Sigmoid, ActivationType::Softmax}, 0.002,
+    NeuralNetwork::Network net({784, 128, 10}, {ActivationType::Sigmoid, ActivationType::Sigmoid}, 4,
                                NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse), std::move(optimizer));
 
     {  // calculate expected epoch time
