@@ -6,7 +6,7 @@
 #include "utils.h"
 #include "layer.h"
 
-TEST_CASE("Basic LinearLayer", "[layer]") {
+TEST_CASE("LinearLayer Basic", "[layer]") {
     size_t in_size = 5, out_size = 2;
     NeuralNetwork::Layer l = NeuralNetwork::LinearLayer(NeuralNetwork::In{in_size}, NeuralNetwork::Out{out_size});
     REQUIRE(l.isDefined());
@@ -25,7 +25,7 @@ TEST_CASE("Basic LinearLayer", "[layer]") {
     REQUIRE(weights.b.size() == out_size);
 }
 
-TEST_CASE("Basic NonLinearLayer", "[layer]") {
+TEST_CASE("NonLinearLayer Basic", "[layer]") {
     NeuralNetwork::Layer l = NeuralNetwork::NonLinearLayer(NeuralNetwork::ActivationType::Sigmoid);
     REQUIRE(l.isDefined());
 
@@ -48,7 +48,7 @@ TEST_CASE("Basic NonLinearLayer", "[layer]") {
     REQUIRE(weights.b.size() == 0);
 }
 
-TEST_CASE("Custom activation function", "[layer]") {
+TEST_CASE("Layer custom activation function", "[layer]") {
     auto zero_forward = [](const NeuralNetwork::Vector& x) -> NeuralNetwork::Vector {
         return NeuralNetwork::Vector::Zero(x.size());
     };

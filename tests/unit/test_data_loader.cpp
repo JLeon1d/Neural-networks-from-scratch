@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "data_loader.h"
 
-TEST_CASE("Basic", "[data_loader]") {
+TEST_CASE("DataLoader Basic", "[data_loader]") {
     size_t data_size = 4;
     size_t features_size = 5;
     size_t target_size = 2;

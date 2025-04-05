@@ -11,19 +11,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 # For code visibility in VSCode
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# add_compile_options(-fsanitize=address)
-# add_link_options(-fsanitize=address)
-# add_compile_options(-fsanitize=undefined)
-# add_link_options(-fsanitize=undefined)
-
 add_subdirectory(src)
 add_subdirectory(pkg)
-
-# find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-# add_subdirectory(pkg/Eigen REQUIRED)
-
-# remove main.cpp to use
-# file(GLOB SOURCES "src/*.cpp")
 
 add_library(neural-net "src/data_loader.cpp"
                        "src/linear_layer.cpp"
@@ -32,16 +21,14 @@ add_library(neural-net "src/data_loader.cpp"
                        "src/neural_network.cpp"
                        "src/optimizer.cpp")
 
-# без этого не работает(
 target_link_libraries(neural-net Eigen3::Eigen)
 target_link_libraries(neural-net AnyMovable)
 
-# To be able to import headers from /src (i think)
+# To be able to import headers from /src
 target_include_directories(neural-net INTERFACE "${PROJECT_SOURCE_DIR}/src")
 
-enable_testing()
-add_subdirectory(tests) # temporary
-
+# "cmake --build . " to build tests
 if(BUILD_TESTING)
-  # add_subdirectory(tests)
+  enable_testing()
+  add_subdirectory(tests)
 endif()

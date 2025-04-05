@@ -29,7 +29,7 @@ private:
     double param_;
 };
 
-TEST_CASE("Basic", "[optimizer]") {
+TEST_CASE("Optimizer Basic", "[optimizer]") {
     REQUIRE(std::is_same_v<NeuralNetwork::Optimizers::Classic::RequiredCacheType,
                            NeuralNetwork::Optimizers::Caches::Empty>);
     REQUIRE(std::is_same_v<NeuralNetwork::Optimizers::AdaGrad::RequiredCacheType,
@@ -55,7 +55,7 @@ TEST_CASE("Basic", "[optimizer]") {
     grds = optimizer->Optimize(cache, x, u, 0.04);
 }
 
-TEST_CASE("Custom optimizer", "[optimizer]") {
+TEST_CASE("Optimizer custom functions", "[optimizer]") {
     NeuralNetwork::Optimizer optimizer = std::move(CustomOptimizer(0.25));
     REQUIRE(optimizer.isDefined());
 

@@ -2,7 +2,7 @@
 #include "utils.h"
 #include "loss.h"
 
-TEST_CASE("Basic", "[loss]") {
+TEST_CASE("Loss Basic", "[loss]") {
     auto lf = NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse);
 
     auto v1 = Utils::MakeVector({1, 2, 3});
@@ -20,7 +20,7 @@ TEST_CASE("Basic", "[loss]") {
     REQUIRE(lf.Loss(v1, v2) == lf_2.Loss(v1, v2));
 }
 
-TEST_CASE("Custom functions", "[loss]") {
+TEST_CASE("Loss custom functions", "[loss]") {
     auto zero_loss = [](const NeuralNetwork::Vector& x, const NeuralNetwork::Vector& u) { return 0.0; };
 
     auto zero_gradient = [](const NeuralNetwork::Vector& x, const NeuralNetwork::Vector& u) {

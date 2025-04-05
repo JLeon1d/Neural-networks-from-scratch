@@ -4,7 +4,7 @@
 #include "utils.h"
 #include "loss.h"
 
-TEST_CASE("Basic", "[network]") {
+TEST_CASE("Nertwork Basic", "[network]") {
     size_t in_size = 5;
     size_t mid_size = 3;
     size_t out_size = 2;
