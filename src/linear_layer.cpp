@@ -25,4 +25,8 @@ Matrix LinearLayer::Backward(const Vector& x, const RowVector& u, const Optimize
     return next_u;
 }
 
+LinearLayer::Weights LinearLayer::GetWeights() const {
+    return Weights{A_, b_};
+}
+
 };  // namespace NeuralNetwork

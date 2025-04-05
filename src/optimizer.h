@@ -22,7 +22,6 @@ struct Empty {
     Empty(size_t x_size, size_t u_size);
 };
 
-// maybe rename (GradientHistory or smth)
 struct SimpleState {
     Matrix A;
     Vector b;
@@ -115,6 +114,8 @@ private:
 
 };  // namespace Optimizers
 
+namespace detail {
+
 template <class TBase>
 class IOptimizer : public TBase {
 public:
@@ -142,8 +143,10 @@ public:
     }
 };
 
-class Optimizer : public NSLibrary::CAnyMovable<IOptimizer, COptimizerImpl> {
-    using CBase = NSLibrary::CAnyMovable<IOptimizer, COptimizerImpl>;
+};  // namespace detail
+
+class Optimizer : public NSLibrary::CAnyMovable<detail::IOptimizer, detail::COptimizerImpl> {
+    using CBase = NSLibrary::CAnyMovable<detail::IOptimizer, detail::COptimizerImpl>;
 
 public:
     using CBase::CBase;

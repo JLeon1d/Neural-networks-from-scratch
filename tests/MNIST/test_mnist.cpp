@@ -25,7 +25,6 @@ using ActivationType = NeuralNetwork::ActivationType;
 
 // in /build: cmake .. && make && ./tests/MNIST/test_mnist
 int main() {
-    Eigen::setNbThreads(2);  // does it work
     auto train_features_path = "../tests/MNIST/train-images.idx3-ubyte";
     auto train_lables_path = "../tests/MNIST/train-labels.idx1-ubyte";
     auto test_features_path = "../tests/MNIST/t10k-images.idx3-ubyte";
@@ -37,18 +36,25 @@ int main() {
     auto train_data = train_data_loader.Load();
     auto test_data = test_data_loader.Load();
 
-    train_data.resize(20000);
+    train_data.resize(10000);
     test_data.resize(4000);
 
     std::cout << "Loaded " << train_data.size() << " train data samples" << std::endl;
     std::cout << "Loaded " << test_data.size() << " test data samples" << std::endl;
 
-    // NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::Adam(0.98, 0.98));
-    NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::Classic());
+    NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::Adam(0.98, 0.98));
+    // NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::Momentum());
+    // NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::Classic());
     // NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::RMSProp(0.98));
 
-    NeuralNetwork::Network net({784, 128, 10}, {ActivationType::Sigmoid, ActivationType::Sigmoid}, 4,
+    /*
+    NeuralNetwork::Network net({784, 128, 10}, {ActivationType::Sigmoid, ActivationType::Sigmoid}, 0.01,
                                NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse), std::move(optimizer));
+    */
+
+    NeuralNetwork::Network net(
+        {784, 200, 80, 10}, {ActivationType::Sigmoid, ActivationType::Sigmoid, ActivationType::Sigmoid}, 0.004,
+        NeuralNetwork::LossFunction(NeuralNetwork::LossType::CrossEntropy), std::move(optimizer));
 
     {  // calculate expected epoch time
         size_t sample_size = 100;

@@ -34,6 +34,9 @@ Gradients Momentum::Optimize(Cache& cache, const Vector& x, const RowVector& u, 
     assert(std::holds_alternative<RequiredCacheType>(cache) && "Wrong type of cache");
     auto m_cache = std::get<RequiredCacheType>(cache);
 
+    assert(m_cache.A.rows() == u.cols() && m_cache.A.cols() == x.size() && m_cache.b.size() == u.cols() &&
+           "Wrong cache size");
+
     m_cache.A = alpha_ * m_cache.A + learning_rate * u.transpose() * x.transpose();
     m_cache.b = alpha_ * m_cache.b + learning_rate * u.transpose();
 
@@ -43,6 +46,9 @@ Gradients Momentum::Optimize(Cache& cache, const Vector& x, const RowVector& u, 
 Gradients AdaGrad::Optimize(Cache& cache, const Vector& x, const RowVector& u, double learning_rate) const {
     assert(std::holds_alternative<RequiredCacheType>(cache) && "Wrong type of cache");
     auto a_cache = std::get<RequiredCacheType>(cache);
+
+    assert(a_cache.A.rows() == u.cols() && a_cache.A.cols() == x.size() && a_cache.b.size() == u.cols() &&
+           "Wrong cache size");
 
     Matrix A_grad(u.transpose() * x.transpose());
     Vector b_grad(u.transpose());
@@ -61,6 +67,9 @@ Gradients RMSProp::Optimize(Cache& cache, const Vector& x, const RowVector& u, d
     assert(std::holds_alternative<RequiredCacheType>(cache) && "Wrong type of cache");
     auto r_cache = std::get<RequiredCacheType>(cache);
 
+    assert(r_cache.A.rows() == u.cols() && r_cache.A.cols() == x.size() && r_cache.b.size() == u.cols() &&
+           "Wrong cache size");
+
     Matrix A_grad(u.transpose() * x.transpose());
     Vector b_grad(u.transpose());
 
@@ -77,6 +86,11 @@ Adam::Adam(double alpha_linear, double alpha_square) : alpha_linear_(alpha_linea
 Gradients Adam::Optimize(Cache& cache, const Vector& x, const RowVector& u, double learning_rate) const {
     assert(std::holds_alternative<RequiredCacheType>(cache) && "Wrong type of cache");
     auto a_cache = std::get<RequiredCacheType>(cache);
+
+    assert(a_cache.A_linear_.rows() == u.cols() && a_cache.A_linear_.cols() == x.size() &&
+           a_cache.b_linear_.size() == u.cols() && "Wrong cache size");
+    assert(a_cache.A_square_.rows() == u.cols() && a_cache.A_square_.cols() == x.size() &&
+           a_cache.b_square_.size() == u.cols() && "Wrong cache size");
 
     Matrix A_grad(u.transpose() * x.transpose());
     Vector b_grad(u.transpose());

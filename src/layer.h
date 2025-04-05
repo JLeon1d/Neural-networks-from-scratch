@@ -11,7 +11,7 @@ template <class TBase>
 class ILayer : public TBase {
 public:
     virtual Vector Forward(const Vector& x) const = 0;
-    virtual Matrix Backward(const Vector& x, const Matrix& u, const Optimizer& gf, Optimizers::Cache& cache,
+    virtual Matrix Backward(const Vector& x, const RowVector& u, const Optimizer& optimizer, Optimizers::Cache& cache,
                             double lambda) = 0;
 };
 
@@ -26,9 +26,9 @@ public:
         return CBase::Object().Forward(x);
     }
 
-    Matrix Backward(const Vector& x, const Matrix& u, const Optimizer& gf, Optimizers::Cache& cache,
+    Matrix Backward(const Vector& x, const RowVector& u, const Optimizer& optimizer, Optimizers::Cache& cache,
                     double lambda) override {
-        return CBase::Object().Backward(x, u, gf, cache, lambda);
+        return CBase::Object().Backward(x, u, optimizer, cache, lambda);
     }
 };
 

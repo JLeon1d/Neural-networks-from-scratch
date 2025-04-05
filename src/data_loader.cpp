@@ -2,10 +2,6 @@
 
 namespace NeuralNetwork {
 
-DataLoader::DataLoader(const std::string& features_path, const std::string& lables_path, LoadFunction f)
-    : features_path_(features_path), lables_path_(lables_path), f_(std::move(f)) {
-}
-
 DataBatch DataLoader::Load() {
     assert(f_);
     auto raw_data = f_(features_path_, lables_path_);

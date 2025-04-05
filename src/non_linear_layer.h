@@ -7,7 +7,7 @@
 
 namespace NeuralNetwork {
 
-enum class ActivationType { Sigmoid, ReLU, Softmax, LeakyReLU };
+enum class ActivationType { Sigmoid, ReLU, LeakyReLU, Softmax };
 
 template <ActivationType type>
 struct ActivationData;
@@ -35,6 +35,29 @@ struct ActivationData<ActivationType::ReLU> {
         assert(u.size() == x.size());
         Matrix deriv = (0.5 + (x.array().sign()) / 2.0).matrix().asDiagonal();
         return u * deriv;
+    }
+};
+
+template <>
+struct ActivationData<ActivationType::LeakyReLU> {
+    static constexpr double kDefaultAlpha = 0.01;
+
+    static Vector forward(const Vector& x, double alpha) {
+        return x.array().max(alpha * x.array()).matrix();
+    }
+
+    static RowVector backward(const Vector& x, const RowVector& u, double alpha) {
+        assert(u.size() == x.size());
+        Matrix deriv = (alpha + 0.5 + (x.array().sign()) / 2.0).matrix().asDiagonal();
+        return u * deriv;
+    }
+
+    static Vector default_forward(const Vector& x) {
+        return forward(x, kDefaultAlpha);
+    }
+
+    static RowVector default_backward(const Vector& x, const RowVector& u) {
+        return backward(x, u, kDefaultAlpha);
     }
 };
 
@@ -71,6 +94,9 @@ struct ActivationSelector {
             case ActivationType::ReLU:
                 ptr = &ActivationData<ActivationType::ReLU>::forward;
                 break;
+            case ActivationType::LeakyReLU:
+                ptr = &ActivationData<ActivationType::LeakyReLU>::default_forward;
+                break;
             case ActivationType::Softmax:
                 ptr = &ActivationData<ActivationType::Softmax>::forward;
                 break;
@@ -91,6 +117,9 @@ struct ActivationSelector {
             case ActivationType::ReLU:
                 ptr = &ActivationData<ActivationType::ReLU>::backward;
                 break;
+            case ActivationType::LeakyReLU:
+                ptr = &ActivationData<ActivationType::LeakyReLU>::default_backward;
+                break;
             case ActivationType::Softmax:
                 ptr = &ActivationData<ActivationType::Softmax>::backward;
                 break;
@@ -109,10 +138,17 @@ public:
     using BackwardType = ActivationSelector::BackwardType;
 
     explicit NonLinearLayer(ActivationType type);
-    NonLinearLayer(ForwardType forward, BackwardType backward);
+
+    template <typename F, typename B>
+    NonLinearLayer(F forward, B backward) : forward_(std::move(forward)), backward_(std::move(backward)){};
 
     Vector Forward(const Vector& x) const;
     Matrix Backward(const Vector& x, const RowVector& u, const Optimizer&, Optimizers::Cache&, double lambda);
+
+    static NonLinearLayer Sigmoid();
+    static NonLinearLayer ReLU();
+    static NonLinearLayer LeakyReLU(double alpha);
+    static NonLinearLayer Softmax();
 
 private:
     std::function<ForwardType> forward_;

@@ -1,13 +1,10 @@
 #include "non_linear_layer.h"
+#include "LinearAlgebra.h"
 
 namespace NeuralNetwork {
 
 NonLinearLayer::NonLinearLayer(ActivationType type)
     : forward_(ActivationSelector::forward(type)), backward_(ActivationSelector::backward(type)) {
-}
-
-NonLinearLayer::NonLinearLayer(ForwardType forward, BackwardType backward)
-    : forward_(std::move(forward)), backward_(std::move(backward)) {
 }
 
 Vector NonLinearLayer::Forward(const Vector& x) const {
@@ -20,16 +17,24 @@ Matrix NonLinearLayer::Backward(const Vector& x, const RowVector& u, const Optim
     return backward_(x, u);
 }
 
-/* work in progress
-Vector NonLinearLayer::LeakyReLU(const Vector& x) {
-    double alpha = 0.01;
-    return x.array().max(alpha * x.array()).matrix();
+NonLinearLayer NonLinearLayer::Sigmoid() {
+    return NonLinearLayer(ActivationType::Sigmoid);
 }
 
-// not exactly deriv
-Matrix NonLinearLayer::LeakyReLUDeriv(const Vector& x) {
-    return (0.01 + 0.5 + (x.array().sign()) / 2.0).matrix().asDiagonal();
+NonLinearLayer NonLinearLayer::ReLU() {
+    return NonLinearLayer(ActivationType::ReLU);
 }
-*/
+
+NonLinearLayer NonLinearLayer::LeakyReLU(double alpha) {
+    return NonLinearLayer(
+        [alpha](const Vector& x) { return ActivationData<ActivationType::LeakyReLU>::forward(x, alpha); },
+        [alpha](const Vector& x, const RowVector& u) {
+            return ActivationData<ActivationType::LeakyReLU>::backward(x, u, alpha);
+        });
+}
+
+NonLinearLayer NonLinearLayer::Softmax() {
+    return NonLinearLayer(ActivationType::Softmax);
+}
 
 };  // namespace NeuralNetwork

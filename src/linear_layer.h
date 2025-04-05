@@ -18,6 +18,13 @@ public:
     Vector Forward(const Vector& x) const;
     Matrix Backward(const Vector& x, const RowVector& u, const Optimizer& gf, Optimizers::Cache& cache, double lambda);
 
+    struct Weights {
+        Matrix A;
+        Vector b;
+    };
+
+    Weights GetWeights() const;
+
 private:
     Matrix A_;
     Vector b_;

@@ -4,16 +4,15 @@
 namespace NeuralNetwork {
 
 Network::Network(const std::vector<int64_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
-                 double learning_rate, LossFunction lf, Optimizer&& gf)
-    : learning_rate_(learning_rate), loss_function_(std::move(lf)), gradient_function_(std::move(gf)) {
+                 double learning_rate, LossFunction lf, Optimizer&& optimizer)
+    : learning_rate_(learning_rate), loss_function_(std::move(lf)), optimizer_(std::move(optimizer)) {
     assert(!layer_sizes.empty());
     assert(!activation_functions.empty());
     assert(layer_sizes.size() == activation_functions.size() + 1);
 
     for (size_t l_id = 0; l_id < layer_sizes.size() - 1; ++l_id) {
         net_.emplace_back(LinearLayer(In{layer_sizes[l_id]}, Out{layer_sizes[l_id + 1]}));
-        optimizer_caches_.emplace_back(
-            gradient_function_->ConstructRequiredCache(layer_sizes[l_id], layer_sizes[l_id + 1]));
+        optimizer_caches_.emplace_back(optimizer_->ConstructRequiredCache(layer_sizes[l_id], layer_sizes[l_id + 1]));
 
         net_.emplace_back(NonLinearLayer(activation_functions[l_id]));
         optimizer_caches_.emplace_back(Optimizers::Caches::Empty());
@@ -30,7 +29,7 @@ void Network::TrainSingle(const DataSample& data_sample) {
 
     auto u = loss_function_.Gradient(xs[net_.size()], data_sample.target);
     for (int i = net_.size() - 1; i >= 0; --i) {
-        u = net_[i]->Backward(xs[i], u, gradient_function_, optimizer_caches_[i], learning_rate_);
+        u = net_[i]->Backward(xs[i], u, optimizer_, optimizer_caches_[i], learning_rate_);
     }
 }
 
@@ -67,6 +66,14 @@ double Network::CheckAccuracy(const std::vector<DataSample>& data, std::function
 
 void Network::SetLearningRate(double learning_rate) {
     learning_rate_ = learning_rate;
+}
+
+Network::NetworkWeights Network::GetWeights() const {
+    NetworkWeights weights(net_.size() / 2);
+    for (size_t l_id = 0; l_id < net_.size(); l_id += 2) {
+    }
+
+    return weights;
 }
 
 };  // namespace NeuralNetwork
