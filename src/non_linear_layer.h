@@ -2,6 +2,7 @@
 
 #include "LinearAlgebra.h"
 #include "optimizer.h"
+#include "layer.h"
 
 #include <functional>
 
@@ -144,6 +145,8 @@ public:
 
     Vector Forward(const Vector& x) const;
     Matrix Backward(const Vector& x, const RowVector& u, const Optimizer&, Optimizers::Cache&, double lambda);
+
+    LayerWeights GetWeights() const;
 
     static NonLinearLayer Sigmoid();
     static NonLinearLayer ReLU();

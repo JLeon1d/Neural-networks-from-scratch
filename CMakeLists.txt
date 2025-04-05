@@ -19,7 +19,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(src)
 add_subdirectory(pkg)
 
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+# find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 # add_subdirectory(pkg/Eigen REQUIRED)
 
 # remove main.cpp to use

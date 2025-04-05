@@ -5,6 +5,11 @@
 
 namespace NeuralNetwork {
 
+struct LayerWeights {
+    Matrix A;
+    Vector b;
+};
+
 namespace details {
 
 template <class TBase>
@@ -13,6 +18,8 @@ public:
     virtual Vector Forward(const Vector& x) const = 0;
     virtual Matrix Backward(const Vector& x, const RowVector& u, const Optimizer& optimizer, Optimizers::Cache& cache,
                             double lambda) = 0;
+
+    virtual LayerWeights GetWeights() const = 0;
 };
 
 template <class TBase, class TObject>
@@ -29,6 +36,10 @@ public:
     Matrix Backward(const Vector& x, const RowVector& u, const Optimizer& optimizer, Optimizers::Cache& cache,
                     double lambda) override {
         return CBase::Object().Backward(x, u, optimizer, cache, lambda);
+    }
+
+    LayerWeights GetWeights() const override {
+        return CBase::Object().GetWeights();
     }
 };
 

@@ -3,7 +3,7 @@
 
 namespace NeuralNetwork {
 
-Network::Network(const std::vector<int64_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
+Network::Network(const std::vector<size_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
                  double learning_rate, LossFunction lf, Optimizer&& optimizer)
     : learning_rate_(learning_rate), loss_function_(std::move(lf)), optimizer_(std::move(optimizer)) {
     assert(!layer_sizes.empty());
@@ -69,8 +69,9 @@ void Network::SetLearningRate(double learning_rate) {
 }
 
 Network::NetworkWeights Network::GetWeights() const {
-    NetworkWeights weights(net_.size() / 2);
+    NetworkWeights weights;
     for (size_t l_id = 0; l_id < net_.size(); l_id += 2) {
+        weights.emplace_back(std::move(net_[l_id]->GetWeights()));
     }
 
     return weights;

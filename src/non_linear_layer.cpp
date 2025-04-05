@@ -17,6 +17,10 @@ Matrix NonLinearLayer::Backward(const Vector& x, const RowVector& u, const Optim
     return backward_(x, u);
 }
 
+LayerWeights NonLinearLayer::GetWeights() const {
+    return {};
+}
+
 NonLinearLayer NonLinearLayer::Sigmoid() {
     return NonLinearLayer(ActivationType::Sigmoid);
 }

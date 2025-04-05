@@ -7,7 +7,7 @@
 #include "layer.h"
 
 TEST_CASE("Basic LinearLayer", "[layer]") {
-    int64_t in_size = 5, out_size = 2;
+    size_t in_size = 5, out_size = 2;
     NeuralNetwork::Layer l = NeuralNetwork::LinearLayer(NeuralNetwork::In{in_size}, NeuralNetwork::Out{out_size});
     REQUIRE(l.isDefined());
 
@@ -19,6 +19,10 @@ TEST_CASE("Basic LinearLayer", "[layer]") {
     auto cache = optimizer->ConstructRequiredCache(in_size, out_size);
     auto u = l->Backward(x, Utils::MakeRowVector({1, 2}), optimizer, cache, 0.1);
     REQUIRE(u.size() == in_size);
+
+    auto weights = l->GetWeights();
+    REQUIRE((weights.A.cols() == in_size and weights.A.rows() == out_size));
+    REQUIRE(weights.b.size() == out_size);
 }
 
 TEST_CASE("Basic NonLinearLayer", "[layer]") {
@@ -38,6 +42,10 @@ TEST_CASE("Basic NonLinearLayer", "[layer]") {
     auto cache = optimizer->ConstructRequiredCache(2, 4);
     auto u = l->Backward(x, Utils::MakeRowVector({1, 2, 3, 2, 1}), optimizer, cache, 0.1);
     REQUIRE(u.cols() == 5);
+
+    auto weights = l->GetWeights();
+    REQUIRE((weights.A.cols() == 0 and weights.A.rows() == 0));
+    REQUIRE(weights.b.size() == 0);
 }
 
 TEST_CASE("Custom activation function", "[layer]") {

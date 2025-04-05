@@ -42,15 +42,7 @@ int main() {
     std::cout << "Loaded " << train_data.size() << " train data samples" << std::endl;
     std::cout << "Loaded " << test_data.size() << " test data samples" << std::endl;
 
-    NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::Adam(0.98, 0.98));
-    // NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::Momentum());
-    // NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::Classic());
-    // NeuralNetwork::Optimizer optimizer = std::move(NeuralNetwork::Optimizers::RMSProp(0.98));
-
-    /*
-    NeuralNetwork::Network net({784, 128, 10}, {ActivationType::Sigmoid, ActivationType::Sigmoid}, 0.01,
-                               NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse), std::move(optimizer));
-    */
+    NeuralNetwork::Optimizer optimizer = NeuralNetwork::Optimizers::Adam(0.98, 0.98);
 
     NeuralNetwork::Network net(
         {784, 200, 80, 10}, {ActivationType::Sigmoid, ActivationType::Sigmoid, ActivationType::Sigmoid}, 0.004,
@@ -65,8 +57,10 @@ int main() {
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        const double kMicrosecondsInMinute = 1e6 * 60.0;
         double expected_epoch_minutes =
-            (((double)duration.count() * train_data.size()) / (double)sample_size) / 1e6 / 60.0;
+            ((static_cast<double>(duration.count()) * train_data.size()) / static_cast<double>(sample_size)) /
+            kMicrosecondsInMinute;
         std::cout << "Expected epoch time (minutes): " << expected_epoch_minutes << std::endl;
     }
 

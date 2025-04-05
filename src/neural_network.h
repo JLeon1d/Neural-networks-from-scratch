@@ -3,8 +3,6 @@
 #include <vector>
 #include "LinearAlgebra.h"
 #include "data_loader.h"
-#include "layer.h"
-#include "linear_layer.h"
 #include "non_linear_layer.h"
 #include "loss.h"
 #include "optimizer.h"
@@ -16,7 +14,7 @@ public:
     static constexpr double kDefaultLearningRate = 0.2;
 
     // (layer_sizes.size()) should be equal to (activation_functions.size() + 1)
-    Network(const std::vector<int64_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
+    Network(const std::vector<size_t>& layer_sizes, const std::vector<ActivationType>& activation_functions,
             double learning_rate = kDefaultLearningRate, LossFunction lf = LossFunction(LossType::Mse),
             Optimizer&& optimizer = std::move(Optimizers::Classic()));
 
@@ -33,7 +31,7 @@ public:
 
     void SetLearningRate(double learning_rate);
 
-    using NetworkWeights = std::vector<LinearLayer::Weights>;
+    using NetworkWeights = std::vector<LayerWeights>;
     NetworkWeights GetWeights() const;
 
 private:

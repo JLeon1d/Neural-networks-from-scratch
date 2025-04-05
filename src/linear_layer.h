@@ -2,13 +2,12 @@
 
 #include "LinearAlgebra.h"
 #include "optimizer.h"
-
-#include <cstdint>
+#include "layer.h"
 
 namespace NeuralNetwork {
 
-enum In : int64_t;
-enum Out : int64_t;
+enum In : size_t;
+enum Out : size_t;
 class LinearLayer {
 public:
     LinearLayer(In in_size, Out out_size);
@@ -18,12 +17,7 @@ public:
     Vector Forward(const Vector& x) const;
     Matrix Backward(const Vector& x, const RowVector& u, const Optimizer& gf, Optimizers::Cache& cache, double lambda);
 
-    struct Weights {
-        Matrix A;
-        Vector b;
-    };
-
-    Weights GetWeights() const;
+    LayerWeights GetWeights() const;
 
 private:
     Matrix A_;
