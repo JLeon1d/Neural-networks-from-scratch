@@ -1,0 +1,55 @@
+#pragma once
+
+#include "LinearAlgebra.h"
+#include "optimizer.h"
+
+namespace NeuralNetwork {
+
+struct LayerWeights {
+    Matrix A;
+    Vector b;
+};
+
+namespace details {
+
+template <class TBase>
+class ILayer : public TBase {
+public:
+    virtual Vector Forward(const Vector& x) const = 0;
+    virtual Matrix Backward(const Vector& x, const RowVector& u, const Optimizer& optimizer, Optimizers::Cache& cache,
+                            double lambda) = 0;
+
+    virtual LayerWeights GetWeights() const = 0;
+};
+
+template <class TBase, class TObject>
+class CLayerImpl : public TBase {
+    using CBase = TBase;
+
+public:
+    using CBase::CBase;
+
+    Vector Forward(const Vector& x) const override {
+        return CBase::Object().Forward(x);
+    }
+
+    Matrix Backward(const Vector& x, const RowVector& u, const Optimizer& optimizer, Optimizers::Cache& cache,
+                    double lambda) override {
+        return CBase::Object().Backward(x, u, optimizer, cache, lambda);
+    }
+
+    LayerWeights GetWeights() const override {
+        return CBase::Object().GetWeights();
+    }
+};
+
+};  // namespace details
+
+class Layer : public NSLibrary::CAnyMovable<details::ILayer, details::CLayerImpl> {
+    using CBase = NSLibrary::CAnyMovable<details::ILayer, details::CLayerImpl>;
+
+public:
+    using CBase::CBase;
+};
+
+};  // namespace NeuralNetwork

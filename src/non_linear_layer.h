@@ -1,0 +1,161 @@
+#pragma once
+
+#include "LinearAlgebra.h"
+#include "optimizer.h"
+#include "layer.h"
+
+#include <functional>
+
+namespace NeuralNetwork {
+
+enum class ActivationType { Sigmoid, ReLU, LeakyReLU, Softmax };
+
+template <ActivationType type>
+struct ActivationData;
+
+template <>
+struct ActivationData<ActivationType::Sigmoid> {
+    static Vector forward(const Vector& x) {
+        return (1.0 / (1.0 + (-x.array()).exp())).matrix();
+    }
+
+    static RowVector backward(const Vector& x, const RowVector& u) {
+        assert(u.size() == x.size());
+        Matrix deriv = Matrix(forward(x).array() * (-forward(x).array() + 1)).transpose();
+        return u.cwiseProduct(deriv);
+    }
+};
+
+template <>
+struct ActivationData<ActivationType::ReLU> {
+    static Vector forward(const Vector& x) {
+        return (x.array().max(0)).matrix();
+    }
+
+    static RowVector backward(const Vector& x, const RowVector& u) {
+        assert(u.size() == x.size());
+        Matrix deriv = (0.5 + (x.array().sign()) / 2.0).matrix().asDiagonal();
+        return u * deriv;
+    }
+};
+
+template <>
+struct ActivationData<ActivationType::LeakyReLU> {
+    static constexpr double kDefaultAlpha = 0.01;
+
+    static Vector forward(const Vector& x, double alpha) {
+        return x.array().max(alpha * x.array()).matrix();
+    }
+
+    static RowVector backward(const Vector& x, const RowVector& u, double alpha) {
+        assert(u.size() == x.size());
+        Matrix deriv = (alpha + 0.5 + (x.array().sign()) / 2.0).matrix().asDiagonal();
+        return u * deriv;
+    }
+
+    static Vector default_forward(const Vector& x) {
+        return forward(x, kDefaultAlpha);
+    }
+
+    static RowVector default_backward(const Vector& x, const RowVector& u) {
+        return backward(x, u, kDefaultAlpha);
+    }
+};
+
+template <>
+struct ActivationData<ActivationType::Softmax> {
+    static Vector forward(const Vector& x) {
+        double m = x.maxCoeff();  // to prevent overflow
+        auto exp_x = (x.array() - m).exp();
+        double exp_sum = exp_x.sum();
+        return exp_x / exp_sum;
+    }
+
+    static RowVector backward(const Vector& x, const RowVector& u) {
+        assert(u.size() == x.size());
+
+        Vector s = forward(x);
+        Matrix deriv = -s * s.transpose();  // -s_i * s_j
+        deriv.diagonal() += s;              // -s_i * s_j + (i == j) * s_i
+
+        return u * deriv;
+    }
+};
+
+struct ActivationSelector {
+    using ForwardType = Vector(Vector const&);
+    using BackwardType = RowVector(Vector const&, RowVector const&);
+
+    static ForwardType* forward(ActivationType type) {
+        ForwardType* ptr;
+        switch (type) {
+            case ActivationType::Sigmoid:
+                ptr = &ActivationData<ActivationType::Sigmoid>::forward;
+                break;
+            case ActivationType::ReLU:
+                ptr = &ActivationData<ActivationType::ReLU>::forward;
+                break;
+            case ActivationType::LeakyReLU:
+                ptr = &ActivationData<ActivationType::LeakyReLU>::default_forward;
+                break;
+            case ActivationType::Softmax:
+                ptr = &ActivationData<ActivationType::Softmax>::forward;
+                break;
+            default:
+                assert(false && "Usupported ActivationType");
+                break;
+        }
+
+        return ptr;
+    }
+
+    static BackwardType* backward(ActivationType type) {
+        BackwardType* ptr;
+        switch (type) {
+            case ActivationType::Sigmoid:
+                ptr = &ActivationData<ActivationType::Sigmoid>::backward;
+                break;
+            case ActivationType::ReLU:
+                ptr = &ActivationData<ActivationType::ReLU>::backward;
+                break;
+            case ActivationType::LeakyReLU:
+                ptr = &ActivationData<ActivationType::LeakyReLU>::default_backward;
+                break;
+            case ActivationType::Softmax:
+                ptr = &ActivationData<ActivationType::Softmax>::backward;
+                break;
+            default:
+                assert(false && "Usupported ActivationType");
+                break;
+        }
+
+        return ptr;
+    }
+};
+
+class NonLinearLayer {
+public:
+    using ForwardType = ActivationSelector::ForwardType;
+    using BackwardType = ActivationSelector::BackwardType;
+
+    explicit NonLinearLayer(ActivationType type);
+
+    template <typename F, typename B>
+    NonLinearLayer(F forward, B backward) : forward_(std::move(forward)), backward_(std::move(backward)){};
+
+    Vector Forward(const Vector& x) const;
+    Matrix Backward(const Vector& x, const RowVector& u, const Optimizer&, Optimizers::Cache&, double lambda);
+
+    LayerWeights GetWeights() const;
+
+    static NonLinearLayer Sigmoid();
+    static NonLinearLayer ReLU();
+    static NonLinearLayer LeakyReLU(double alpha);
+    static NonLinearLayer Softmax();
+
+private:
+    std::function<ForwardType> forward_;
+    std::function<BackwardType> backward_;
+};
+
+};  // namespace NeuralNetwork
