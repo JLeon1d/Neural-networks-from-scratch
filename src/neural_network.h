@@ -22,6 +22,8 @@ public:
 
     void TrainSingle(const DataSample& data_sample);
 
+    void Train(const DataBatch& data);
+
     Vector Predict(const Vector& features) const;
 
     double CheckLoss(const std::vector<DataSample>& data) const;

@@ -36,17 +36,14 @@ int main() {
     auto train_data = train_data_loader.Load();
     auto test_data = test_data_loader.Load();
 
-    train_data.resize(10000);
-    test_data.resize(4000);
-
     std::cout << "Loaded " << train_data.size() << " train data samples" << std::endl;
     std::cout << "Loaded " << test_data.size() << " test data samples" << std::endl;
 
     NeuralNetwork::Optimizer optimizer = NeuralNetwork::Optimizers::Adam(0.98, 0.98);
 
-    NeuralNetwork::Network net(
-        {784, 200, 80, 10}, {ActivationType::Sigmoid, ActivationType::Sigmoid, ActivationType::Sigmoid}, 0.004,
-        NeuralNetwork::LossFunction(NeuralNetwork::LossType::CrossEntropy), std::move(optimizer));
+    NeuralNetwork::Network net({784, 300, 120, 10},
+                               {ActivationType::Sigmoid, ActivationType::Sigmoid, ActivationType::Softmax}, 0.04,
+                               NeuralNetwork::LossFunction(NeuralNetwork::LossType::Mse), std::move(optimizer));
 
     {  // calculate expected epoch time
         size_t sample_size = 100;
@@ -65,7 +62,6 @@ int main() {
     }
 
     size_t progress_p = 1000;
-    size_t batch_size = 100;
     for (size_t epoch_id = 0; epoch_id < 30; ++epoch_id) {
         for (size_t i = 0; i < train_data.size(); ++i) {
             net.TrainSingle(train_data[i]);

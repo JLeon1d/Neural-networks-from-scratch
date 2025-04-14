@@ -33,6 +33,12 @@ void Network::TrainSingle(const DataSample& data_sample) {
     }
 }
 
+void Network::Train(const DataBatch& data) {
+    for (const auto& data_sample : data) {
+        TrainSingle(data_sample);
+    }
+}
+
 Vector Network::Predict(const Vector& features) const {
     auto x = features;
     for (size_t i = 0; i < net_.size(); ++i) {

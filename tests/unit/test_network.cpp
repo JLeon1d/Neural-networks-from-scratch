@@ -21,6 +21,7 @@ TEST_CASE("Nertwork Basic", "[network]") {
     net.TrainSingle(data[0]);
     double loss0 = net.CheckLoss(data);
     net.SetLearningRate(0.1);
+    net.Train(data);
 
     auto predict = net.Predict(data[0].features);
     REQUIRE(predict.size() == 2);
